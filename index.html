@@ -7,7 +7,7 @@
 <meta name="site-url" content="https://projeto-vida-ten.vercel.app"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -653,12 +653,12 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // ================================================================
 
 const CONFIGURED = SUPABASE_URL !== 'https://mmfvdzecujukjlfbpjia.supabase.co' && SUPABASE_KEY !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZnZkemVjdWp1a2psZmJwamlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NzgzOTIsImV4cCI6MjA5NTI1NDM5Mn0.8oby1ts9cRmJ8GnHwJOQlgTDR6jaIlxyhqKVmqHQ2HY';
-let supabase = null;
+let sb = null;
 let currentUser = null;
 let saveTimeout = null;
 
 if (CONFIGURED) {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 } else {
   // Modo offline â€” usa localStorage, sem login
   document.getElementById('config-warning').style.display = 'block';
@@ -813,7 +813,7 @@ async function loadFromDB(){
     setSyncStatus('ok'); return;
   }
   try{
-    const {data,error}=await supabase.from('user_data').select('data').eq('user_id',currentUser.id).single();
+    const {data,error}=await sb.from('user_data').select('data').eq('user_id',currentUser.id).single();
     if(error&&error.code==='PGRST116'){ S=blank(); await saveToDB(); }
     else if(error){ throw error; }
     else{ S=sanitize(data?.data||{}); }
@@ -831,7 +831,7 @@ async function saveToDB(){
   }
   setSyncStatus('syncing');
   try{
-    const{error}=await supabase.from('user_data').upsert({user_id:currentUser.id,data:S,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    const{error}=await sb.from('user_data').upsert({user_id:currentUser.id,data:S,updated_at:new Date().toISOString()},{onConflict:'user_id'});
     if(error) throw error;
     setSyncStatus('ok');
     flashSaved();
@@ -879,7 +879,7 @@ async function loginGoogle(){
   hideErrors();
   document.querySelectorAll('.btn-google').forEach(b=>{ b.disabled=true; b.style.opacity='0.6'; });
   showLoading('Abrindo login Google...');
-  const{error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://projeto-vida-ten.vercel.app'}});
+  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://projeto-vida-ten.vercel.app'}});
   if(error){
     hideLoading();
     document.querySelectorAll('.btn-google').forEach(b=>{ b.disabled=false; b.style.opacity=''; });
@@ -896,7 +896,7 @@ async function loginEmail(){
   const btn=document.getElementById('btn-login');
   if(btn){ btn.disabled=true; btn.textContent='Entrando...'; }
   showLoading('Entrando...');
-  const{error}=await supabase.auth.signInWithPassword({email,password:pass});
+  const{error}=await sb.auth.signInWithPassword({email,password:pass});
   if(error){
     hideLoading();
     if(btn){ btn.disabled=false; btn.textContent='Entrar'; }
@@ -915,7 +915,7 @@ async function registerEmail(){
   const btn=document.getElementById('btn-reg');
   if(btn){ btn.disabled=true; btn.textContent='Criando...'; }
   showLoading('Criando conta...');
-  const{error}=await supabase.auth.signUp({email,password:pass,options:{data:{full_name:nome}}});
+  const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:nome}}});
   if(error){
     hideLoading();
     if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
@@ -942,7 +942,7 @@ function translateError(msg){
 
 async function logout(){
   await saveToDB();
-  if(CONFIGURED) await supabase.auth.signOut();
+  if(CONFIGURED) await sb.auth.signOut();
   currentUser=null; S={};
   document.getElementById('app-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
@@ -970,13 +970,13 @@ async function enterApp(user){
 
 // Listen for auth state changes (handles Google OAuth redirect)
 if(CONFIGURED){
-  supabase.auth.onAuthStateChange(async(event,session)=>{
+  sb.auth.onAuthStateChange(async(event,session)=>{
     if(session?.user){
       await enterApp(session.user);
     }
   });
   // check existing session
-  supabase.auth.getSession().then(({data:{session}})=>{
+  sb.auth.getSession().then(({data:{session}})=>{
     if(session?.user) enterApp(session.user);
   });
 }
@@ -1274,4 +1274,5 @@ function closeOv(id){document.getElementById(id).classList.remove('open');}
 </script>
 </body>
 </html>
+
 
