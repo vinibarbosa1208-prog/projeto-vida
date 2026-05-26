@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <!-- Supabase SDK -->
 <script>window.SupabaseSDK=null;</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="window.SupabaseSDK=window.supabase;delete window.supabase"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="window.SupabaseSDK=window.supabase;delete window.supabase" onerror="console.error('Supabase CDN falhou ao carregar')"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -891,6 +891,7 @@ async function loginGoogle(){
 
 async function loginEmail(){
   if(!CONFIGURED){ showError('login-error','Configure o Supabase primeiro.'); return; }
+  if(!sb){ showError('login-error','SDK não carregado. Desative extensões/bloqueadores e recarregue a página.'); return; }
   const email=document.getElementById('login-email').value.trim();
   const pass=document.getElementById('login-pass').value;
   if(!email||!pass){ showError('login-error','Preencha email e senha.'); return; }
@@ -898,16 +899,23 @@ async function loginEmail(){
   const btn=document.getElementById('btn-login');
   if(btn){ btn.disabled=true; btn.textContent='Entrando...'; }
   showLoading('Entrando...');
-  const{error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){
+  try{
+    const{error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error){
+      hideLoading();
+      if(btn){ btn.disabled=false; btn.textContent='Entrar'; }
+      showError('login-error',translateError(error.message));
+    }
+  }catch(e){
     hideLoading();
     if(btn){ btn.disabled=false; btn.textContent='Entrar'; }
-    showError('login-error',translateError(error.message));
+    showError('login-error','Erro de conexão: '+e.message);
   }
 }
 
 async function registerEmail(){
   if(!CONFIGURED){ showError('reg-error','Configure o Supabase primeiro.'); return; }
+  if(!sb){ showError('reg-error','SDK não carregado. Desative extensões/bloqueadores e recarregue a página.'); return; }
   const nome=document.getElementById('reg-nome').value.trim();
   const email=document.getElementById('reg-email').value.trim();
   const pass=document.getElementById('reg-pass').value;
@@ -917,20 +925,26 @@ async function registerEmail(){
   const btn=document.getElementById('btn-reg');
   if(btn){ btn.disabled=true; btn.textContent='Criando...'; }
   showLoading('Criando conta...');
-  const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:nome}}});
-  if(error){
+  try{
+    const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:nome}}});
+    if(error){
+      hideLoading();
+      if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
+      showError('reg-error',translateError(error.message));
+    } else {
+      hideLoading();
+      if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
+      const el=document.getElementById('reg-error');
+      el.style.display='block';
+      el.style.background='var(--green-bg)';
+      el.style.borderColor='var(--green)44';
+      el.style.color='var(--green)';
+      el.textContent='✅ Conta criada! Verifique seu email para confirmar.';
+    }
+  }catch(e){
     hideLoading();
     if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
-    showError('reg-error',translateError(error.message));
-  } else {
-    hideLoading();
-    if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
-    const el=document.getElementById('reg-error');
-    el.style.display='block';
-    el.style.background='var(--green-bg)';
-    el.style.borderColor='var(--green)44';
-    el.style.color='var(--green)';
-    el.textContent='✅ Conta criada! Verifique seu email para confirmar.';
+    showError('reg-error','Erro de conexão: '+e.message);
   }
 }
 
