@@ -909,19 +909,27 @@ function hideErrors(){ ['login-error','reg-error'].forEach(id=>{ const el=docume
 
 async function loginGoogle(){
   if(!CONFIGURED){ showError('login-error','Configure o Supabase primeiro. Veja o guia abaixo.'); return; }
+  if(!sb){ showError('login-error','Autenticação ainda carregando. Aguarde 2 segundos e tente novamente.'); return; }
   hideErrors();
   document.querySelectorAll('.btn-google').forEach(b=>{ b.disabled=true; b.style.opacity='0.6'; });
   showLoading('Abrindo login Google...');
-  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://projeto-vida-ten.vercel.app'}});
-  if(error){
+  try {
+    const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://projeto-vida-ten.vercel.app'}});
+    if(error){
+      hideLoading();
+      document.querySelectorAll('.btn-google').forEach(b=>{ b.disabled=false; b.style.opacity=''; });
+      showError('login-error',error.message);
+    }
+  } catch(e){
     hideLoading();
     document.querySelectorAll('.btn-google').forEach(b=>{ b.disabled=false; b.style.opacity=''; });
-    showError('login-error',error.message);
+    showError('login-error','Erro ao conectar. Recarregue a página e tente novamente.');
   }
 }
 
 async function loginEmail(){
   if(!CONFIGURED){ showError('login-error','Configure o Supabase primeiro.'); return; }
+  if(!sb){ showError('login-error','Autenticação ainda carregando. Aguarde 2 segundos e tente novamente.'); return; }
   const email=document.getElementById('login-email').value.trim();
   const pass=document.getElementById('login-pass').value;
   if(!email||!pass){ showError('login-error','Preencha email e senha.'); return; }
@@ -929,16 +937,23 @@ async function loginEmail(){
   const btn=document.getElementById('btn-login');
   if(btn){ btn.disabled=true; btn.textContent='Entrando...'; }
   showLoading('Entrando...');
-  const{error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){
+  try {
+    const{error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error){
+      hideLoading();
+      if(btn){ btn.disabled=false; btn.textContent='Entrar'; }
+      showError('login-error',translateError(error.message));
+    }
+  } catch(e){
     hideLoading();
     if(btn){ btn.disabled=false; btn.textContent='Entrar'; }
-    showError('login-error',translateError(error.message));
+    showError('login-error','Erro ao conectar. Recarregue a página e tente novamente.');
   }
 }
 
 async function registerEmail(){
   if(!CONFIGURED){ showError('reg-error','Configure o Supabase primeiro.'); return; }
+  if(!sb){ showError('reg-error','Autenticação ainda carregando. Aguarde 2 segundos e tente novamente.'); return; }
   const nome=document.getElementById('reg-nome').value.trim();
   const email=document.getElementById('reg-email').value.trim();
   const pass=document.getElementById('reg-pass').value;
@@ -948,20 +963,26 @@ async function registerEmail(){
   const btn=document.getElementById('btn-reg');
   if(btn){ btn.disabled=true; btn.textContent='Criando...'; }
   showLoading('Criando conta...');
-  const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:nome}}});
-  if(error){
+  try {
+    const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:nome}}});
+    if(error){
+      hideLoading();
+      if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
+      showError('reg-error',translateError(error.message));
+    } else {
+      hideLoading();
+      if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
+      const el=document.getElementById('reg-error');
+      el.style.display='block';
+      el.style.background='var(--green-bg)';
+      el.style.borderColor='var(--green)44';
+      el.style.color='var(--green)';
+      el.textContent='✅ Conta criada! Verifique seu email para confirmar.';
+    }
+  } catch(e){
     hideLoading();
     if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
-    showError('reg-error',translateError(error.message));
-  } else {
-    hideLoading();
-    if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
-    const el=document.getElementById('reg-error');
-    el.style.display='block';
-    el.style.background='var(--green-bg)';
-    el.style.borderColor='var(--green)44';
-    el.style.color='var(--green)';
-    el.textContent='✅ Conta criada! Verifique seu email para confirmar.';
+    showError('reg-error','Erro ao conectar. Recarregue a página e tente novamente.');
   }
 }
 
