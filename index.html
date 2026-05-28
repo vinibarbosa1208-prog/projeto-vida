@@ -320,6 +320,29 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
 /* MISC */
 .empty{text-align:center;padding:36px;color:var(--text3);font-size:13px}
+
+/* CALENDÁRIO RETROATIVO */
+.retro-cal{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.retro-day{flex:1;min-width:52px;padding:10px 4px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.retro-day:hover{border-color:var(--border2);background:var(--bg3)}
+.retro-day.selected{border-color:var(--amber);background:var(--amber-bg);box-shadow:0 0 12px var(--amber)22}
+.retro-day.full{border-color:var(--green)55;background:var(--green-bg)}
+.retro-day.partial{border-color:var(--amber)44;background:var(--amber-bg)}
+.retro-day.empty-day{border-color:var(--border);background:var(--bg2)}
+.retro-day.today-day{border-color:var(--blue)55;background:var(--blue-bg)}
+.retro-day.today-day.selected{border-color:var(--amber);background:var(--amber-bg)}
+.retro-day-name{font-size:10px;color:var(--text2);font-family:var(--mono);text-transform:uppercase;margin-bottom:4px}
+.retro-day-num{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text)}
+.retro-day-pct{font-size:10px;margin-top:3px;font-family:var(--mono)}
+.retro-day.full .retro-day-pct{color:var(--green)}
+.retro-day.partial .retro-day-pct{color:var(--amber)}
+.retro-day.empty-day .retro-day-pct{color:var(--text3)}
+.retro-day.selected .retro-day-num{color:var(--amber)}
+.retro-edited{position:absolute;top:4px;right:4px;font-size:9px;opacity:0.7}
+.editing-banner{background:var(--amber-bg);border:1px solid var(--amber)44;border-radius:var(--r);padding:8px 14px;margin-bottom:14px;font-size:12px;color:var(--amber);display:flex;align-items:center;gap:8px;justify-content:space-between}
+.editing-banner strong{font-weight:600}
+.btn-back-today{font-size:11px;padding:4px 10px;border:1px solid var(--amber)44;border-radius:6px;background:transparent;color:var(--amber);cursor:pointer;font-family:var(--font)}
+.btn-back-today:hover{background:var(--amber-bg)}
 .mono{font-family:var(--mono)}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -490,6 +513,18 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <!-- HOJE -->
   <div id="page-hoje" class="page active">
     <div class="ph"><div class="ph-title">⚔️ Missões do Dia</div><div class="ph-sub" id="hoje-sub"></div></div>
+
+    <!-- CALENDÁRIO RETROATIVO -->
+    <div class="card mb20">
+      <div class="stitle">Selecione o dia para registrar</div>
+      <div class="retro-cal" id="retro-cal"></div>
+      <div id="editing-banner" style="display:none">
+        <div class="editing-banner">
+          <span>✏️ Editando: <strong id="editing-label"></strong></span>
+          <button class="btn-back-today" onclick="selectDay(0)">← Voltar para hoje</button>
+        </div>
+      </div>
+    </div>
     <div class="card mb20">
       <div class="stitle">Como você está?</div>
       <div class="mood-row" id="mood-row">
@@ -808,6 +843,9 @@ const COR={
 // ================================================================
 // STATE — per user, saved to Supabase
 // ================================================================
+// Dia sendo editado (0 = hoje, 1 = ontem, etc.)
+let EDITING_DAY = 0;
+
 function blank(){return{
   v:3,
   habitos:JSON.parse(JSON.stringify(HABITOS_DEF)),
@@ -909,27 +947,19 @@ function hideErrors(){ ['login-error','reg-error'].forEach(id=>{ const el=docume
 
 async function loginGoogle(){
   if(!CONFIGURED){ showError('login-error','Configure o Supabase primeiro. Veja o guia abaixo.'); return; }
-  if(!sb){ showError('login-error','Autenticação ainda carregando. Aguarde 2 segundos e tente novamente.'); return; }
   hideErrors();
   document.querySelectorAll('.btn-google').forEach(b=>{ b.disabled=true; b.style.opacity='0.6'; });
   showLoading('Abrindo login Google...');
-  try {
-    const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://projeto-vida-ten.vercel.app'}});
-    if(error){
-      hideLoading();
-      document.querySelectorAll('.btn-google').forEach(b=>{ b.disabled=false; b.style.opacity=''; });
-      showError('login-error',error.message);
-    }
-  } catch(e){
+  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://projeto-vida-ten.vercel.app'}});
+  if(error){
     hideLoading();
     document.querySelectorAll('.btn-google').forEach(b=>{ b.disabled=false; b.style.opacity=''; });
-    showError('login-error','Erro ao conectar. Recarregue a página e tente novamente.');
+    showError('login-error',error.message);
   }
 }
 
 async function loginEmail(){
   if(!CONFIGURED){ showError('login-error','Configure o Supabase primeiro.'); return; }
-  if(!sb){ showError('login-error','Autenticação ainda carregando. Aguarde 2 segundos e tente novamente.'); return; }
   const email=document.getElementById('login-email').value.trim();
   const pass=document.getElementById('login-pass').value;
   if(!email||!pass){ showError('login-error','Preencha email e senha.'); return; }
@@ -937,23 +967,16 @@ async function loginEmail(){
   const btn=document.getElementById('btn-login');
   if(btn){ btn.disabled=true; btn.textContent='Entrando...'; }
   showLoading('Entrando...');
-  try {
-    const{error}=await sb.auth.signInWithPassword({email,password:pass});
-    if(error){
-      hideLoading();
-      if(btn){ btn.disabled=false; btn.textContent='Entrar'; }
-      showError('login-error',translateError(error.message));
-    }
-  } catch(e){
+  const{error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){
     hideLoading();
     if(btn){ btn.disabled=false; btn.textContent='Entrar'; }
-    showError('login-error','Erro ao conectar. Recarregue a página e tente novamente.');
+    showError('login-error',translateError(error.message));
   }
 }
 
 async function registerEmail(){
   if(!CONFIGURED){ showError('reg-error','Configure o Supabase primeiro.'); return; }
-  if(!sb){ showError('reg-error','Autenticação ainda carregando. Aguarde 2 segundos e tente novamente.'); return; }
   const nome=document.getElementById('reg-nome').value.trim();
   const email=document.getElementById('reg-email').value.trim();
   const pass=document.getElementById('reg-pass').value;
@@ -963,26 +986,20 @@ async function registerEmail(){
   const btn=document.getElementById('btn-reg');
   if(btn){ btn.disabled=true; btn.textContent='Criando...'; }
   showLoading('Criando conta...');
-  try {
-    const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:nome}}});
-    if(error){
-      hideLoading();
-      if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
-      showError('reg-error',translateError(error.message));
-    } else {
-      hideLoading();
-      if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
-      const el=document.getElementById('reg-error');
-      el.style.display='block';
-      el.style.background='var(--green-bg)';
-      el.style.borderColor='var(--green)44';
-      el.style.color='var(--green)';
-      el.textContent='✅ Conta criada! Verifique seu email para confirmar.';
-    }
-  } catch(e){
+  const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:nome}}});
+  if(error){
     hideLoading();
     if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
-    showError('reg-error','Erro ao conectar. Recarregue a página e tente novamente.');
+    showError('reg-error',translateError(error.message));
+  } else {
+    hideLoading();
+    if(btn){ btn.disabled=false; btn.textContent='Criar conta'; }
+    const el=document.getElementById('reg-error');
+    el.style.display='block';
+    el.style.background='var(--green-bg)';
+    el.style.borderColor='var(--green)44';
+    el.style.color='var(--green)';
+    el.textContent='✅ Conta criada! Verifique seu email para confirmar.';
   }
 }
 
@@ -1027,14 +1044,22 @@ async function enterApp(user){
 // ================================================================
 // HELPERS
 // ================================================================
-function dk(){return new Date().toISOString().slice(0,10);}
+function dk(offset){
+  // offset=0 é hoje, offset=1 é ontem, etc.
+  const o = offset !== undefined ? offset : EDITING_DAY;
+  const d = new Date();
+  d.setDate(d.getDate() - o);
+  return d.toISOString().slice(0,10);
+}
+function dkToday(){ return new Date().toISOString().slice(0,10); }
 function wk(){const d=new Date(),day=d.getDay(),diff=d.getDate()-day+(day===0?-6:1);return new Date(d.setDate(diff)).toISOString().slice(0,10);}
 function gday(){
-  const k=dk();
-  if(!S.dias[k]) S.dias[k]={done:{},qty:{},obs:'',xp:0,mood:-1};
+  const k=dk(); // usa EDITING_DAY automaticamente
+  if(!S.dias[k]) S.dias[k]={done:{},qty:{},obs:'',xp:0,mood:-1,edited:EDITING_DAY>0};
   if(!S.dias[k].done) S.dias[k].done={};
   if(!S.dias[k].qty)  S.dias[k].qty={};
   if(S.dias[k].xp==null) S.dias[k].xp=0;
+  if(EDITING_DAY>0) S.dias[k].edited=true;
   return S.dias[k];
 }
 function gwk(){const k=wk();if(!S.corrida[k])S.corrida[k]=[false,false,false,false,false,false,false];return S.corrida[k];}
@@ -1086,11 +1111,74 @@ function renderSidebar(){
     .map(s=>`<div class="sm-row"><div class="sm-lbl">${s.l}</div><div class="sm-bar"><div class="sm-fill" style="width:${s.v}%;background:${s.c}"></div></div><div class="sm-val">${s.v}</div></div>`).join('');
 }
 
+// CALENDÁRIO RETROATIVO
+function selectDay(offset){
+  EDITING_DAY = offset;
+
+  // Atualizar banner de edição
+  const banner = document.getElementById('editing-banner');
+  const label  = document.getElementById('editing-label');
+  if(offset === 0){
+    if(banner) banner.style.display = 'none';
+  } else {
+    const d = new Date();
+    d.setDate(d.getDate() - offset);
+    const opts = {weekday:'long', day:'numeric', month:'long'};
+    if(label) label.textContent = d.toLocaleDateString('pt-BR', opts);
+    if(banner) banner.style.display = 'block';
+  }
+
+  renderRetroCal();
+  renderHoje();
+}
+
+function renderRetroCal(){
+  const el = document.getElementById('retro-cal');
+  if(!el) return;
+
+  const DIAS_ABREV = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const today = new Date();
+
+  el.innerHTML = Array.from({length:7}, (_,i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (6-i)); // do mais antigo ao mais recente
+    const offset = 6 - i;           // offset 6=6 dias atrás, 0=hoje
+    const key = d.toISOString().slice(0,10);
+    const day = S.dias[key];
+    const done = day ? S.habitos.filter(h=>day.done[h.id]).length : 0;
+    const total = S.habitos.length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const isToday = offset === 0;
+    const isSelected = offset === EDITING_DAY;
+    const isEdited = day?.edited && !isToday;
+
+    let cls = 'retro-day';
+    if(isSelected) cls += ' selected';
+    else if(isToday) cls += ' today-day';
+    else if(pct===100) cls += ' full';
+    else if(pct>0) cls += ' partial';
+    else cls += ' empty-day';
+
+    const pctLabel = isToday && !day ? '—' : pct+'%';
+    const dayName  = isToday ? 'Hoje' : DIAS_ABREV[d.getDay()];
+
+    return `<div class="${cls}" onclick="selectDay(${offset})">
+      ${isEdited ? '<span class="retro-edited">✏️</span>' : ''}
+      <div class="retro-day-name">${dayName}</div>
+      <div class="retro-day-num">${d.getDate()}</div>
+      <div class="retro-day-pct">${pctLabel}</div>
+    </div>`;
+  }).join('');
+}
+
 // HOJE
 function renderHoje(){
   const day=gday(),total=S.habitos.length,done=S.habitos.filter(h=>day.done[h.id]).length,p=total?Math.round(done/total*100):0;
   const lv=getLv(S.totalXP);
-  document.getElementById('hoje-sub').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Mostrar data do dia sendo editado
+  const editDate = new Date(); editDate.setDate(editDate.getDate()-EDITING_DAY);
+  document.getElementById('hoje-sub').textContent = editDate.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  renderRetroCal();
   document.getElementById('sc-miss').textContent=`${done}/${total}`;
   document.getElementById('sc-pct').textContent=`${p}% do dia`;
   document.getElementById('sc-xp').textContent=`+${day.xp||0}`;
@@ -1116,15 +1204,36 @@ function renderHoje(){
 }
 
 function toggleH(id){
-  const day=gday();day.done[id]=!day.done[id];
+  const day=gday();
+  const wasDown=!!day.done[id];
+  day.done[id]=!wasDown;
   const h=S.habitos.find(x=>x.id===id);if(!h)return;
+
+  const isRetro = EDITING_DAY > 0;
+
   if(day.done[id]){
-    S.totalXP+=h.xp;day.xp=(day.xp||0)+h.xp;S.hc[id]=(S.hc[id]||0)+1;
+    // Só soma XP se for hoje (não retroativo)
+    if(!isRetro){
+      S.totalXP+=h.xp;day.xp=(day.xp||0)+h.xp;
+      toast(h.nome,'txp',h.icon,h.xp);
+      if(S.habitos.every(x=>day.done[x.id])){
+        S.totalXP+=100;day.xp+=100;S.diasPerfeitos++;
+        document.getElementById('dco').classList.add('show');
+      }
+    } else {
+      // Retroativo: mostra confirmação sem somar XP
+      const editDate=new Date();editDate.setDate(editDate.getDate()-EDITING_DAY);
+      toast('Registrado em '+editDate.toLocaleDateString('pt-BR',{day:'numeric',month:'short'}),'','✏️');
+      if(S.habitos.every(x=>day.done[x.id])) S.diasPerfeitos++;
+    }
+    S.hc[id]=(S.hc[id]||0)+1;
     if(id==='escrita')updEscrita(true);
-    toast(h.nome,'txp',h.icon,h.xp);
-    if(S.habitos.every(x=>day.done[x.id])){S.totalXP+=100;day.xp+=100;S.diasPerfeitos++;document.getElementById('dco').classList.add('show');}
   }else{
-    S.totalXP=Math.max(0,S.totalXP-h.xp);day.xp=Math.max(0,(day.xp||0)-h.xp);S.hc[id]=Math.max(0,(S.hc[id]||1)-1);
+    if(!isRetro){
+      S.totalXP=Math.max(0,S.totalXP-h.xp);
+      day.xp=Math.max(0,(day.xp||0)-h.xp);
+    }
+    S.hc[id]=Math.max(0,(S.hc[id]||1)-1);
     if(id==='escrita')updEscrita(false);
   }
   const done=S.habitos.filter(x=>day.done[x.id]).length;
