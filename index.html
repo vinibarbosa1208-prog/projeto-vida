@@ -719,7 +719,7 @@ window._SB_INIT = function() {
     });
     // Escutar mudanças de auth
     sb.auth.onAuthStateChange(async(event,session) => {
-      if(session?.user && !currentUser) {
+      if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED') && session?.user && !currentUser) {
         await enterApp(session.user);
       }
     });
@@ -878,6 +878,8 @@ function sanitize(data){
 // ================================================================
 async function loadFromDB(){
   setSyncStatus('syncing');
+  let timedOut = false;
+  const timer = setTimeout(()=>{ timedOut=true; S=blank(); setSyncStatus('error'); }, 8000);
   if(!CONFIGURED||!currentUser||currentUser.id==='local'){
     try{ const r=localStorage.getItem('vida_demo'); S=r?sanitize(JSON.parse(r)):blank(); }
     catch(e){ S=blank(); }
