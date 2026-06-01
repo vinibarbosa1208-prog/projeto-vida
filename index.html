@@ -879,7 +879,7 @@ function sanitize(data){
 async function loadFromDB(){
   setSyncStatus('syncing');
   let timedOut = false;
-  const timer = setTimeout(()=>{ timedOut=true; S=blank(); setSyncStatus('error'); }, 8000);
+  const timer = setTimeout(()=>{ timedOut=true; if(!S||!S.habitos)S=blank(); setSyncStatus('error'); }, 8000);
   if(!CONFIGURED||!currentUser||currentUser.id==='local'){
     try{ const r=localStorage.getItem('vida_demo'); S=r?sanitize(JSON.parse(r)):blank(); }
     catch(e){ S=blank(); }
@@ -1025,7 +1025,7 @@ async function logout(){
 async function enterApp(user){
   currentUser=user;
   showLoading('Carregando seus dados...');
-  await loadFromDB();
+  await Promise.race([loadFromDB(), new Promise(r=>setTimeout(r,5000))]);
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   // set avatar
