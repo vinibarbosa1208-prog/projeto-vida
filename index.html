@@ -878,8 +878,7 @@ function sanitize(data){
 // ================================================================
 async function loadFromDB(){
   setSyncStatus('syncing');
-  let timedOut = false;
-  const timer = setTimeout(()=>{ timedOut=true; if(!S||!S.habitos)S=blank(); setSyncStatus('error'); }, 8000);
+  let timedOut=false;const timer=setTimeout(()=>{timedOut=true;if(!S||!S.habitos)S=blank();},8000);
   if(!CONFIGURED||!currentUser||currentUser.id==='local'){
     try{ const r=localStorage.getItem('vida_demo'); S=r?sanitize(JSON.parse(r)):blank(); }
     catch(e){ S=blank(); }
