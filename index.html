@@ -8,6 +8,7 @@
 <meta name="site-url" content="https://projeto-vida-ten.vercel.app"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -500,6 +501,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <button class="nb" onclick="goPage('conquistas',this)"><span class="nb-icon">🏆</span> Conquistas<span class="nb-badge" id="bdg-cq" style="display:none">!</span></button>
     <div class="nav-group">Mente</div>
     <button class="nb" onclick="goPage('caderno',this)"><span class="nb-icon">✍️</span> Caderno</button>
+    <button class="nb" onclick="goPage('estudos',this)"><span class="nb-icon">📚</span> Estudos</button>
   </nav>
   <div class="sidebar-foot">
     <div class="streak-num" id="s-streak">0</div>
@@ -676,25 +678,27 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     </div>
     <div class="card"><div class="stitle">Histórico — últimas 2 semanas</div><div id="escrita-hist"></div></div>
   </div>
+  <div id="page-estudos" class="page">
+  <div class="ph"><div class="ph-title">📚 Módulo de Estudos</div><div class="ph-sub">Concurso Câmara Arujá • Petrobras 2026</div></div>
+  <div class="card mb20" id="est-countdown"></div>
+  <div class="est-tabs">
+    <button class="est-tab active" onclick="estTab('dashboard',this)">📊 Dashboard</button>
+    <button class="est-tab" onclick="estTab('disciplinas',this)">📖 Disciplinas</button>
+    <button class="est-tab" onclick="estTab('sessao',this)">⏱ Sessão</button>
+    <button class="est-tab" onclick="estTab('questoes',this)">✏️ Questões</button>
+    <button class="est-tab" onclick="estTab('erros',this)">❌ Banco de Erros</button>
+  </div>
+  <div id="est-content"></div>
+</div>
 </main>
 </div>
 </div>
 
 <script>
-// Carregar Supabase SDK de forma assíncrona para evitar conflito
-(function() {
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-  s.onload = function() {
-    window._SB_SDK = window.supabase;
-    if(typeof window.supabase !== 'undefined') {
-      delete window.supabase;
-    }
-    window._SB_READY = true;
-    if(window._SB_INIT) window._SB_INIT();
-  };
-  document.head.appendChild(s);
-})();
+// SDK carregado de forma síncrona — inicializar imediatamente
+window._SB_SDK = window.supabase;
+window._SB_READY = true;
+document.addEventListener('DOMContentLoaded', function(){ if(window._SB_INIT) window._SB_INIT(); });
 </script>
 <script>
 // ================================================================
@@ -1420,7 +1424,72 @@ function renderCaderno(){
 }
 
 // NAV
-const RENDERS={hoje:renderHoje,mapa:renderMapa,arena:renderArena,stats:renderStats,rpg:renderRPG,metas:renderMetas,conquistas:renderCQ,caderno:renderCaderno};
+var EST_TAB='dashboard';
+function estTab(t,el){EST_TAB=t;document.querySelectorAll('.est-tab').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');renderEstConteudo();}
+function renderEstudos(){
+  var E=S.estudos||{};
+  var prova=new Date('2026-08-30');
+  var dias=Math.ceil((prova-new Date())/86400000);
+  var cor=dias<=30?'var(--red)':dias<=60?'var(--amber)':'var(--green)';
+  var el=document.getElementById('est-countdown');
+  if(el)el.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;color:var(--text3)">FOCO ATUAL</div><div style="font-size:18px;font-weight:700;margin-top:4px">🎯 Câmara Arujá + Petrobras</div><div style="font-size:12px;color:var(--text2);margin-top:4px">Prova: 30 de agosto de 2026</div></div><div style="text-align:center"><div style="font-size:52px;font-weight:700;font-family:var(--mono);color:'+cor+'">'+dias+'</div><div style="font-size:12px;color:var(--text2)">dias restantes</div></div></div>';
+  EST_TAB='dashboard';
+  document.querySelectorAll('.est-tab').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+  renderEstConteudo();
+}
+function renderEstConteudo(){
+  var el=document.getElementById('est-content');
+  if(!el)return;
+  var E=S.estudos||{};
+  var discs=E.disciplinas||[];
+  if(EST_TAB==='dashboard'){
+    el.innerHTML='<div class="g2">'+discs.map(d=>'<div class="card-sm" style="border-left:3px solid '+d.cor+'"><div style="font-size:20px">'+d.emoji+'</div><div style="font-size:13px;font-weight:500;margin-top:4px">'+d.nome+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase">'+d.cor+'</div></div>').join('')+'</div>';
+  }else if(EST_TAB==='sessao'){
+    el.innerHTML='<div class="card"><div class="stitle">Nova Sessão de Estudos</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px"><select id="s-disc" class="input-field"><option value="">Disciplina</option>'+discs.map(d=>'<option value="'+d.id+'">'+d.emoji+' '+d.nome+'</option>').join('')+'</select><input id="s-tema" class="input-field" placeholder="Tema estudado"><input id="s-min" class="input-field" type="number" placeholder="Minutos estudados"><select id="s-dif" class="input-field"><option>Fácil</option><option>Média</option><option>Difícil</option></select><button class="btn-primary" onclick="addSessao()">Salvar Sessão +XP</button></div></div>';
+  }else if(EST_TAB==='questoes'){
+    el.innerHTML='<div class="card"><div class="stitle">Registrar Questões</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px"><select id="q-disc" class="input-field"><option value="">Disciplina</option>'+discs.map(d=>'<option value="'+d.id+'">'+d.emoji+' '+d.nome+'</option>').join('')+'</select><input id="q-tema" class="input-field" placeholder="Tema"><input id="q-total" class="input-field" type="number" placeholder="Total de questões"><input id="q-acertos" class="input-field" type="number" placeholder="Acertos"><button class="btn-primary" onclick="addQuestao()">Salvar</button></div></div>';
+  }else if(EST_TAB==='erros'){
+    var erros=(E.erros||[]);
+    el.innerHTML='<div class="card"><div class="stitle">Banco de Erros ('+erros.length+')</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px"><select id="e-disc" class="input-field"><option value="">Disciplina</option>'+discs.map(d=>'<option value="'+d.id+'">'+d.emoji+' '+d.nome+'</option>').join('')+'</select><input id="e-tema" class="input-field" placeholder="Tema do erro"><input id="e-motivo" class="input-field" placeholder="Por que errei?"><button class="btn-primary" onclick="addErro()">Registrar Erro</button></div>'+(erros.length?'<div style="margin-top:16px">'+erros.map(e=>'<div class="card-sm" style="margin-bottom:8px"><div style="font-size:12px;font-weight:500">'+e.tema+'</div><div style="font-size:11px;color:var(--text2)">'+e.motivo+'</div></div>').join('')+'</div>':'<div class="empty">Nenhum erro registrado!</div>')+'</div>';
+  }else if(EST_TAB==='disciplinas'){
+    el.innerHTML='<div class="g2">'+discs.map(d=>{var qs=(E.questoes||[]).filter(q=>q.discId===d.id);var ac=qs.reduce((s,q)=>s+q.acertos,0);var tot=qs.reduce((s,q)=>s+q.total,0);var taxa=tot?Math.round(ac/tot*100):0;return'<div class="card-sm" style="border-left:3px solid '+d.cor+'"><div style="font-size:22px">'+d.emoji+'</div><div style="font-size:13px;font-weight:600;margin-top:4px">'+d.nome+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+(qs.length?taxa+'% acertos · '+tot+' questões':'Nenhuma questão ainda')+'</div></div>';}).join('')+'</div>';
+  }
+}
+function addSessao(){
+  var disc=document.getElementById('s-disc').value;
+  var tema=document.getElementById('s-tema').value;
+  var min=parseInt(document.getElementById('s-min').value)||0;
+  var dif=document.getElementById('s-dif').value;
+  if(!disc||!tema||!min){toast('Preencha todos os campos','terror','⚠️');return;}
+  if(!S.estudos)S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
+  var xp=Math.round(min/10)*5;
+  S.estudos.sessoes.push({id:'s'+(++S.estudos.did),discId:disc,tema,min,dif,data:dk(0),ts:Date.now()});
+  S.totalXP+=xp;
+  toast('Sessão salva!','txp','📚',xp);
+  sv();renderEstConteudo();
+}
+function addQuestao(){
+  var disc=document.getElementById('q-disc').value;
+  var tema=document.getElementById('q-tema').value;
+  var total=parseInt(document.getElementById('q-total').value)||0;
+  var acertos=parseInt(document.getElementById('q-acertos').value)||0;
+  if(!disc||!tema||!total){toast('Preencha todos os campos','terror','⚠️');return;}
+  if(!S.estudos)S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
+  S.estudos.questoes.push({id:'q'+(++S.estudos.qid),discId:disc,tema,total,acertos,erros:total-acertos,data:dk(0),ts:Date.now()});
+  toast('Questões salvas!','txp','✏️',Math.round(acertos*2));
+  sv();renderEstConteudo();
+}
+function addErro(){
+  var disc=document.getElementById('e-disc').value;
+  var tema=document.getElementById('e-tema').value;
+  var motivo=document.getElementById('e-motivo').value;
+  if(!disc||!tema||!motivo){toast('Preencha todos os campos','terror','⚠️');return;}
+  if(!S.estudos)S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
+  S.estudos.erros.push({id:'e'+(++S.estudos.eid),discId:disc,tema,motivo,status:'pendente',data:dk(0),ts:Date.now()});
+  toast('Erro registrado para revisão','','❌');
+  sv();renderEstConteudo();
+}
+const RENDERS={hoje:renderHoje,mapa:renderMapa,arena:renderArena,stats:renderStats,rpg:renderRPG,metas:renderMetas,conquistas:renderCQ,caderno:renderCaderno,estudos:renderEstudos};
 function goPage(name,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');btn.classList.add('active');if(RENDERS[name])RENDERS[name]();}
 function openOv(id){document.getElementById(id).classList.add('open');}
 function closeOv(id){document.getElementById(id).classList.remove('open');}
