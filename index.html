@@ -695,12 +695,6 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 </div>
 
 <script>
-// SDK carregado de forma síncrona — inicializar imediatamente
-window._SB_SDK = window.supabase;
-window._SB_READY = true;
-document.addEventListener('DOMContentLoaded', function(){ if(window._SB_INIT) window._SB_INIT(); });
-</script>
-<script>
 // ================================================================
 //  ⚙️  CONFIGURAÇÃO SUPABASE — COLE SUAS CREDENCIAIS AQUI
 // ================================================================
@@ -709,27 +703,19 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // ================================================================
 
 const CONFIGURED = SUPABASE_URL !== 'SEU_SUPABASE_URL' && SUPABASE_KEY !== 'SEU_SUPABASE_KEY';
-let sb = null;
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let saveTimeout = null;
 
-// Inicializar quando o SDK carregar
-window._SB_INIT = function() {
-  if (CONFIGURED && window._SB_SDK) {
-    sb = window._SB_SDK.createClient(SUPABASE_URL, SUPABASE_KEY);
-    // Verificar sessão existente
-    sb.auth.getSession().then(({data:{session}}) => {
-      if(session?.user) enterApp(session.user);
-    });
-    // Escutar mudanças de auth
-    sb.auth.onAuthStateChange(async(event,session) => {
-      if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED') && session?.user && !currentUser) {
-        await enterApp(session.user);
-      }
-    });
+// Verificar sessão existente e escutar mudanças de auth
+sb.auth.getSession().then(({data:{session}}) => {
+  if(session?.user) enterApp(session.user);
+});
+sb.auth.onAuthStateChange(async(event,session) => {
+  if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED') && session?.user && !currentUser) {
+    await enterApp(session.user);
   }
-};
-if(window._SB_READY) window._SB_INIT();
+});
 
 if (!CONFIGURED) {
   // Modo offline — usa localStorage, sem login
