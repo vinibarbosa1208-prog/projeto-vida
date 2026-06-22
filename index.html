@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>VIDA â€” O Jogo da Disciplina</title>
+<title>VIDA — O Jogo da Disciplina</title>
 <!-- version:14048c74 build:1779737019 -->
 <meta name="site-url" content="https://projeto-vida-ten.vercel.app"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -322,7 +321,122 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 /* MISC */
 .empty{text-align:center;padding:36px;color:var(--text3);font-size:13px}
 
-/* CALENDÃRIO RETROATIVO */
+/* ═══ MÓDULO ESTUDOS ═══ */
+.est-tabs{display:flex;gap:4px;padding:4px;background:var(--bg2);border-radius:var(--r);margin-bottom:16px;overflow-x:auto}
+.est-tab{flex:1;min-width:80px;padding:8px 12px;border-radius:6px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:transparent;white-space:nowrap;font-family:var(--font);transition:all .15s;text-align:center}
+.est-tab.active{background:var(--bg4);color:var(--text);box-shadow:0 1px 4px #0004}
+.est-tab:hover:not(.active){color:var(--text);background:var(--bg3)}
+
+.disc-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;transition:all .2s;cursor:pointer}
+.disc-card:hover{border-color:var(--border2);background:var(--bg3)}
+.disc-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.disc-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.disc-name{font-size:14px;font-weight:600;color:var(--text)}
+.disc-meta{font-size:11px;color:var(--text2);margin-top:2px;font-family:var(--mono)}
+.disc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.disc-stat{background:var(--bg3);border-radius:6px;padding:6px 8px;text-align:center}
+.disc-stat-val{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--text)}
+.disc-stat-lbl{font-size:9px;color:var(--text3);margin-top:1px}
+.disc-bar-wrap{margin-top:10px}
+.disc-bar-bg{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.disc-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+
+.sessao-form{display:flex;flex-direction:column;gap:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row.single{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:var(--font);outline:none;transition:border .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--amber)}
+.form-group textarea{resize:vertical;min-height:72px}
+.form-group select option{background:var(--bg2)}
+
+.sessao-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;gap:12px;align-items:flex-start}
+.sessao-data{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:48px}
+.sessao-body{flex:1}
+.sessao-disc{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:4px}
+.sessao-tema{font-size:13px;font-weight:500;color:var(--text)}
+.sessao-meta{font-size:11px;color:var(--text2);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+.sessao-dur{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber);min-width:52px;text-align:right}
+
+.questao-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;align-items:center;gap:10px}
+.questao-disc{font-size:12px;font-weight:600}
+.questao-info{flex:1}
+.questao-tema{font-size:13px;color:var(--text)}
+.questao-stats{display:flex;gap:8px;font-size:11px;font-family:var(--mono);margin-top:3px}
+.q-acertos{color:var(--green)}
+.q-erros{color:#f87171}
+.q-pct{color:var(--amber);font-weight:700}
+
+.erro-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;position:relative}
+.erro-card.revisado{opacity:.5;border-style:dashed}
+.erro-badge{font-size:10px;padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:6px}
+.erro-tema{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.erro-motivo{font-size:12px;color:var(--text2);line-height:1.5}
+.erro-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.btn-revisar{font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--amber)44;background:var(--amber-bg);color:var(--amber);cursor:pointer;font-family:var(--font)}
+.btn-revisar:hover{background:var(--amber)22}
+
+.revisao-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;gap:12px;align-items:center}
+.revisao-urgencia{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rev-hoje{background:#f87171}
+.rev-semana{background:var(--amber)}
+.rev-normal{background:var(--green)}
+.revisao-info{flex:1}
+.revisao-tema{font-size:13px;font-weight:500;color:var(--text)}
+.revisao-meta{font-size:11px;color:var(--text2);margin-top:2px}
+.revisao-dias{font-family:var(--mono);font-size:12px;font-weight:700;min-width:60px;text-align:right}
+
+.ia-box{background:linear-gradient(135deg,var(--amber-bg),var(--purple-bg));border:1px solid var(--amber)22;border-radius:var(--r);padding:16px}
+.ia-response{font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap}
+.ia-loading{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--amber)}
+.ia-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:blink 1.2s infinite}
+.ia-dot:nth-child(2){animation-delay:.2s}
+.ia-dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+.meta-est-bar{background:var(--bg3);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.meta-est-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.meta-est-name{font-size:13px;font-weight:500;color:var(--text)}
+.meta-est-pct{font-family:var(--mono);font-size:13px;color:var(--amber)}
+.meta-est-bg{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.meta-est-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--amber),var(--amber2));transition:width .4s}
+
+/* RANKING */
+.rank-global-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);transition:all .2s}
+.rank-global-item:last-child{border-bottom:none}
+.rank-global-item.me{background:var(--amber-bg);border-radius:var(--r);padding:12px;margin:-2px -8px;border-bottom:none}
+.rank-pos-big{font-family:var(--mono);font-size:22px;font-weight:700;width:36px;text-align:center;flex-shrink:0}
+.rank-pos-big.p1{color:var(--amber);text-shadow:0 0 10px var(--amber)44}
+.rank-pos-big.p2{color:#94a3b8}
+.rank-pos-big.p3{color:var(--amber2)}
+.rank-avatar{width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid var(--border2)}
+.rank-info{flex:1;min-width:0}
+.rank-username{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-detail{font-size:11px;color:var(--text2);margin-top:2px;font-family:var(--mono)}
+.rank-score{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--amber);flex-shrink:0}
+.rank-badge{font-size:10px;padding:2px 7px;border-radius:8px;background:var(--amber-bg);color:var(--amber);font-weight:600;flex-shrink:0}
+
+/* PÓDIO */
+.podio-wrap{display:flex;justify-content:center;align-items:flex-end;gap:12px;margin-bottom:20px;padding:16px 0}
+.podio-item{display:flex;flex-direction:column;align-items:center;gap:6px}
+.podio-avatar{width:48px;height:48px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid var(--border2)}
+.podio-item.p1 .podio-avatar{border-color:var(--amber);box-shadow:0 0 16px var(--amber)33;width:60px;height:60px;font-size:28px}
+.podio-item.p2 .podio-avatar{border-color:#94a3b8}
+.podio-item.p3 .podio-avatar{border-color:var(--amber2)}
+.podio-name{font-size:12px;font-weight:500;color:var(--text);text-align:center;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podio-xp{font-size:11px;color:var(--amber);font-family:var(--mono)}
+.podio-crown{font-size:20px;margin-bottom:-4px}
+.podio-bar{border-radius:6px 6px 0 0;width:60px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+.podio-item.p1 .podio-bar{height:80px;background:var(--amber-bg);border:1px solid var(--amber)33}
+.podio-item.p2 .podio-bar{height:60px;background:var(--bg3);border:1px solid var(--border2)}
+.podio-item.p3 .podio-bar{height:44px;background:var(--bg3);border:1px solid var(--border2)}
+.podio-rank{font-family:var(--mono);font-size:14px;font-weight:700}
+.podio-item.p1 .podio-rank{color:var(--amber)}
+.podio-item.p2 .podio-rank{color:#94a3b8}
+.podio-item.p3 .podio-rank{color:var(--amber2)}
+
+/* CALENDÁRIO RETROATIVO */
 .retro-cal{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
 .retro-day{flex:1;min-width:52px;padding:10px 4px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);text-align:center;cursor:pointer;transition:all .2s;position:relative}
 .retro-day:hover{border-color:var(--border2);background:var(--bg3)}
@@ -358,33 +472,33 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 <!-- DAY COMPLETE -->
 <div id="dco">
   <div class="dco-in">
-    <div class="dco-icon">ðŸ‘‘</div>
+    <div class="dco-icon">👑</div>
     <div class="dco-title">DIA PERFEITO</div>
-    <div class="dco-sub">Todos os hÃ¡bitos completos!</div>
-    <div class="dco-xp" id="dco-xp">+100 XP bÃ´nus</div>
-    <button class="dco-btn" onclick="document.getElementById('dco').classList.remove('show')">Continuar â†’</button>
+    <div class="dco-sub">Todos os hábitos completos!</div>
+    <div class="dco-xp" id="dco-xp">+100 XP bônus</div>
+    <button class="dco-btn" onclick="document.getElementById('dco').classList.remove('show')">Continuar →</button>
   </div>
 </div>
 
 <!-- MODAL HABITO -->
 <div class="ov" id="ov-hb">
   <div class="modal">
-    <h3>Novo HÃ¡bito</h3>
+    <h3>Novo Hábito</h3>
     <div class="frow">
       <div class="fg2"><label class="fl2">Nome</label><input class="fi" id="hb-nome" placeholder="Ex: Meditar"/></div>
-      <div class="fg2"><label class="fl2">Emoji</label><input class="fi" id="hb-icon" placeholder="ðŸ§˜" maxlength="2"/></div>
+      <div class="fg2"><label class="fl2">Emoji</label><input class="fi" id="hb-icon" placeholder="🧘" maxlength="2"/></div>
     </div>
     <div class="frow">
       <div class="fg2"><label class="fl2">Categoria</label>
-        <select class="fi" id="hb-cat"><option value="saude">SaÃºde</option><option value="mente">Mente</option><option value="produtividade">Produtividade</option><option value="disciplina">Disciplina</option></select>
+        <select class="fi" id="hb-cat"><option value="saude">Saúde</option><option value="mente">Mente</option><option value="produtividade">Produtividade</option><option value="disciplina">Disciplina</option></select>
       </div>
       <div class="fg2"><label class="fl2">XP</label><input class="fi" id="hb-xp" type="number" value="20" min="5" max="100"/></div>
     </div>
     <div class="frow">
       <div class="fg2"><label class="fl2">Cor</label>
-        <select class="fi" id="hb-cor"><option value="green">Verde</option><option value="blue">Azul</option><option value="purple">Roxo</option><option value="amber">Ã‚mbar</option><option value="teal">Teal</option><option value="pink">Rosa</option><option value="red">Vermelho</option></select>
+        <select class="fi" id="hb-cor"><option value="green">Verde</option><option value="blue">Azul</option><option value="purple">Roxo</option><option value="amber">Âmbar</option><option value="teal">Teal</option><option value="pink">Rosa</option><option value="red">Vermelho</option></select>
       </div>
-      <div class="fg2"><label class="fl2">Unidade (opcional)</label><input class="fi" id="hb-unit" placeholder="km, pÃ¡g, min..."/></div>
+      <div class="fg2"><label class="fl2">Unidade (opcional)</label><input class="fi" id="hb-unit" placeholder="km, pág, min..."/></div>
     </div>
     <div class="mfoot"><button class="btn-c" onclick="closeOv('ov-hb')">Cancelar</button><button class="btn-p" onclick="saveHabito()">Salvar</button></div>
   </div>
@@ -397,9 +511,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div class="fg2"><label class="fl2">Nome</label><input class="fi" id="mt-nome" placeholder="Ex: Juntar R$ 50.000"/></div>
     <div class="frow">
       <div class="fg2"><label class="fl2">Categoria</label>
-        <select class="fi" id="mt-cat"><option value="financas">ðŸ’° FinanÃ§as</option><option value="saude">ðŸ’ª SaÃºde</option><option value="carreira">ðŸš€ Carreira</option><option value="pessoal">ðŸŒ± Pessoal</option></select>
+        <select class="fi" id="mt-cat"><option value="financas">💰 Finanças</option><option value="saude">💪 Saúde</option><option value="carreira">🚀 Carreira</option><option value="pessoal">🌱 Pessoal</option></select>
       </div>
-      <div class="fg2"><label class="fl2">Ãcone</label><input class="fi" id="mt-icon" placeholder="ðŸŽ¯" maxlength="2"/></div>
+      <div class="fg2"><label class="fl2">Ícone</label><input class="fi" id="mt-icon" placeholder="🎯" maxlength="2"/></div>
     </div>
     <div class="frow">
       <div class="fg2"><label class="fl2">Valor atual</label><input class="fi" id="mt-atual" type="number" value="0"/></div>
@@ -408,10 +522,10 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div class="frow">
       <div class="fg2"><label class="fl2">Unidade</label><input class="fi" id="mt-unidade" placeholder="R$, livros, %..."/></div>
       <div class="fg2"><label class="fl2">Cor</label>
-        <select class="fi" id="mt-cor"><option value="green">Verde</option><option value="blue">Azul</option><option value="purple">Roxo</option><option value="amber">Ã‚mbar</option><option value="teal">Teal</option><option value="pink">Rosa</option><option value="red">Vermelho</option></select>
+        <select class="fi" id="mt-cor"><option value="green">Verde</option><option value="blue">Azul</option><option value="purple">Roxo</option><option value="amber">Âmbar</option><option value="teal">Teal</option><option value="pink">Rosa</option><option value="red">Vermelho</option></select>
       </div>
     </div>
-    <div class="fg2"><label class="fl2">DescriÃ§Ã£o</label><input class="fi" id="mt-desc" placeholder="MotivaÃ§Ã£o ou contexto..."/></div>
+    <div class="fg2"><label class="fl2">Descrição</label><input class="fi" id="mt-desc" placeholder="Motivação ou contexto..."/></div>
     <div class="mfoot"><button class="btn-c" onclick="closeOv('ov-mt')">Cancelar</button><button class="btn-p" onclick="saveMeta()">Salvar</button></div>
   </div>
 </div>
@@ -424,11 +538,11 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
       <div class="login-logo-sub">O Jogo da Disciplina</div>
     </div>
     <div class="login-card">
-      <!-- Supabase configurado âœ“ -->
+      <!-- Supabase configurado ✓ -->
 
       <div id="login-panel">
         <div class="login-title">Bem-vindo de volta</div>
-        <div class="login-sub">Entre com sua conta Google para acessar seus hÃ¡bitos em qualquer dispositivo.</div>
+        <div class="login-sub">Entre com sua conta Google para acessar seus hábitos em qualquer dispositivo.</div>
         <div class="login-error" id="login-error"></div>
         <button class="btn-google" onclick="loginGoogle()" id="btn-google">
           <svg class="btn-google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -436,14 +550,14 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         </button>
         <div class="divider"><span>ou</span></div>
         <div class="fg2"><label class="fl2">Email</label><input class="fi" id="login-email" type="email" placeholder="seu@email.com"/></div>
-        <div class="fg2"><label class="fl2">Senha</label><input class="fi" id="login-pass" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" onkeydown="if(event.key==='Enter')loginEmail()"/></div>
+        <div class="fg2"><label class="fl2">Senha</label><input class="fi" id="login-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginEmail()"/></div>
         <button class="btn-primary" onclick="loginEmail()" id="btn-login">Entrar</button>
-        <div class="login-switch">NÃ£o tem conta? <button class="btn-link" onclick="showRegister()">Criar conta gratuita</button></div>
+        <div class="login-switch">Não tem conta? <button class="btn-link" onclick="showRegister()">Criar conta gratuita</button></div>
       </div>
 
       <div id="register-panel" style="display:none">
         <div class="login-title">Criar conta</div>
-        <div class="login-sub">Crie sua conta para comeÃ§ar o jogo da disciplina.</div>
+        <div class="login-sub">Crie sua conta para começar o jogo da disciplina.</div>
         <div class="login-error" id="reg-error"></div>
         <button class="btn-google" onclick="loginGoogle()">
           <svg class="btn-google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -452,9 +566,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         <div class="divider"><span>ou</span></div>
         <div class="fg2"><label class="fl2">Nome</label><input class="fi" id="reg-nome" placeholder="Seu nome"/></div>
         <div class="fg2"><label class="fl2">Email</label><input class="fi" id="reg-email" type="email" placeholder="seu@email.com"/></div>
-        <div class="fg2"><label class="fl2">Senha (mÃ­n. 6 caracteres)</label><input class="fi" id="reg-pass" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" onkeydown="if(event.key==='Enter')registerEmail()"/></div>
+        <div class="fg2"><label class="fl2">Senha (mín. 6 caracteres)</label><input class="fi" id="reg-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')registerEmail()"/></div>
         <button class="btn-primary" onclick="registerEmail()" id="btn-reg">Criar conta</button>
-        <div class="login-switch">JÃ¡ tem conta? <button class="btn-link" onclick="showLogin()">Entrar</button></div>
+        <div class="login-switch">Já tem conta? <button class="btn-link" onclick="showLogin()">Entrar</button></div>
       </div>
 
       <div class="login-loading" id="login-loading">
@@ -477,7 +591,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <div class="avatar-section">
     <div class="avatar-wrap">
       <div class="avatar-ring"></div>
-      <div class="avatar-inner" id="av-inner"><span id="av-emoji">ðŸŒ±</span></div>
+      <div class="avatar-inner" id="av-inner"><span id="av-emoji">🌱</span></div>
       <div class="avatar-lv" id="av-lv">1</div>
     </div>
     <div class="player-name" id="av-name">Jogador</div>
@@ -491,70 +605,74 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <div class="stats-mini" id="stats-mini"></div>
   <nav class="nav-section">
     <div class="nav-group">Jogo</div>
-    <button class="nb active" onclick="goPage('hoje',this)"><span class="nb-icon">âš”ï¸</span> MissÃµes do Dia</button>
-    <button class="nb" onclick="goPage('mapa',this)"><span class="nb-icon">ðŸ—ºï¸</span> Mapa de Progresso</button>
-    <button class="nb" onclick="goPage('arena',this)"><span class="nb-icon">ðŸŸï¸</span> Arena Semanal</button>
-    <button class="nb" onclick="goPage('stats',this)"><span class="nb-icon">ðŸ“Š</span> EstatÃ­sticas</button>
+    <button class="nb active" onclick="goPage('hoje',this)"><span class="nb-icon">⚔️</span> Missões do Dia</button>
+    <button class="nb" onclick="goPage('mapa',this)"><span class="nb-icon">🗺️</span> Mapa de Progresso</button>
+    <button class="nb" onclick="goPage('arena',this)"><span class="nb-icon">🏟️</span> Arena Semanal</button>
+    <button class="nb" onclick="goPage('stats',this)"><span class="nb-icon">📊</span> Estatísticas</button>
     <div class="nav-group">Progresso</div>
-    <button class="nb" onclick="goPage('rpg',this)"><span class="nb-icon">ðŸ§¬</span> Status RPG</button>
-    <button class="nb" onclick="goPage('metas',this)"><span class="nb-icon">ðŸŽ¯</span> Metas 2026</button>
-    <button class="nb" onclick="goPage('conquistas',this)"><span class="nb-icon">ðŸ†</span> Conquistas<span class="nb-badge" id="bdg-cq" style="display:none">!</span></button>
+    <button class="nb" onclick="goPage('rpg',this)"><span class="nb-icon">🧬</span> Status RPG</button>
+    <button class="nb" onclick="goPage('metas',this)"><span class="nb-icon">🎯</span> Metas 2026</button>
+    <button class="nb" onclick="goPage('conquistas',this)"><span class="nb-icon">🏆</span> Conquistas<span class="nb-badge" id="bdg-cq" style="display:none">!</span></button>
     <div class="nav-group">Mente</div>
-    <button class="nb" onclick="goPage('caderno',this)"><span class="nb-icon">âœï¸</span> Caderno</button>
-    <button class="nb" onclick="goPage('estudos',this)"><span class="nb-icon">ðŸ“š</span> Estudos</button>
+    <button class="nb" onclick="goPage('caderno',this)"><span class="nb-icon">✍️</span> Caderno</button>
+    <div class="nav-group">Aprendizado</div>
+    <button class="nb" onclick="goPage('estudos',this)"><span class="nb-icon">📚</span> Estudos</button>
+    <div class="nav-group">Comunidade</div>
+    <button class="nb" onclick="goPage('arena-global',this)"><span class="nb-icon">🌍</span> Ranking Global</button>
+    <button class="nb" onclick="goPage('competicao',this)"><span class="nb-icon">⚡</span> Competição Semanal</button>
   </nav>
   <div class="sidebar-foot">
     <div class="streak-num" id="s-streak">0</div>
-    <div class="streak-lbl">dias de streak ðŸ”¥</div>
+    <div class="streak-lbl">dias de streak 🔥</div>
     <div class="save-ind"><div class="save-dot" id="save-dot"></div><span id="save-txt">sincronizado</span></div>
-    <button class="btn-logout" onclick="logout()">â†© Sair da conta</button>
+    <button class="btn-logout" onclick="logout()">↩ Sair da conta</button>
   </div>
 </aside>
 
 <main class="main">
   <!-- HOJE -->
   <div id="page-hoje" class="page active">
-    <div class="ph"><div class="ph-title">âš”ï¸ MissÃµes do Dia</div><div class="ph-sub" id="hoje-sub"></div></div>
+    <div class="ph"><div class="ph-title">⚔️ Missões do Dia</div><div class="ph-sub" id="hoje-sub"></div></div>
 
-    <!-- CALENDÃRIO RETROATIVO -->
+    <!-- CALENDÁRIO RETROATIVO -->
     <div class="card mb20">
       <div class="stitle">Selecione o dia para registrar</div>
       <div class="retro-cal" id="retro-cal"></div>
       <div id="editing-banner" style="display:none">
         <div class="editing-banner">
-          <span>âœï¸ Editando: <strong id="editing-label"></strong></span>
-          <button class="btn-back-today" onclick="selectDay(0)">â† Voltar para hoje</button>
+          <span>✏️ Editando: <strong id="editing-label"></strong></span>
+          <button class="btn-back-today" onclick="selectDay(0)">← Voltar para hoje</button>
         </div>
       </div>
     </div>
     <div class="card mb20">
-      <div class="stitle">Como vocÃª estÃ¡?</div>
+      <div class="stitle">Como você está?</div>
       <div class="mood-row" id="mood-row">
-        <button class="mbtn" onclick="setMood(0,this)"><span class="memoji">ðŸ˜«</span>PÃ©ssimo</button>
-        <button class="mbtn" onclick="setMood(1,this)"><span class="memoji">ðŸ˜•</span>Mal</button>
-        <button class="mbtn" onclick="setMood(2,this)"><span class="memoji">ðŸ˜</span>Ok</button>
-        <button class="mbtn" onclick="setMood(3,this)"><span class="memoji">ðŸ˜Š</span>Bem</button>
-        <button class="mbtn" onclick="setMood(4,this)"><span class="memoji">ðŸ¤©</span>Ã“timo</button>
+        <button class="mbtn" onclick="setMood(0,this)"><span class="memoji">😫</span>Péssimo</button>
+        <button class="mbtn" onclick="setMood(1,this)"><span class="memoji">😕</span>Mal</button>
+        <button class="mbtn" onclick="setMood(2,this)"><span class="memoji">😐</span>Ok</button>
+        <button class="mbtn" onclick="setMood(3,this)"><span class="memoji">😊</span>Bem</button>
+        <button class="mbtn" onclick="setMood(4,this)"><span class="memoji">🤩</span>Ótimo</button>
       </div>
     </div>
     <div class="g4 mb20">
-      <div class="sc cg"><div class="sc-lbl">MissÃµes</div><div class="sc-val" style="color:var(--green)" id="sc-miss">0/0</div><div class="sc-sub" id="sc-pct">0%</div><div class="sc-icon">âš”ï¸</div></div>
-      <div class="sc ca"><div class="sc-lbl">XP hoje</div><div class="sc-val" style="color:var(--amber)" id="sc-xp">+0</div><div class="sc-sub">ganhos hoje</div><div class="sc-icon">âš¡</div></div>
-      <div class="sc cb"><div class="sc-lbl">Streak</div><div class="sc-val" style="color:var(--blue)" id="sc-streak">0</div><div class="sc-sub">dias seguidos</div><div class="sc-icon">ðŸ”¥</div></div>
-      <div class="sc cp"><div class="sc-lbl">NÃ­vel</div><div class="sc-val" style="color:var(--purple)" id="sc-lv">1</div><div class="sc-sub" id="sc-lv-sub">Iniciante</div><div class="sc-icon">â­</div></div>
+      <div class="sc cg"><div class="sc-lbl">Missões</div><div class="sc-val" style="color:var(--green)" id="sc-miss">0/0</div><div class="sc-sub" id="sc-pct">0%</div><div class="sc-icon">⚔️</div></div>
+      <div class="sc ca"><div class="sc-lbl">XP hoje</div><div class="sc-val" style="color:var(--amber)" id="sc-xp">+0</div><div class="sc-sub">ganhos hoje</div><div class="sc-icon">⚡</div></div>
+      <div class="sc cb"><div class="sc-lbl">Streak</div><div class="sc-val" style="color:var(--blue)" id="sc-streak">0</div><div class="sc-sub">dias seguidos</div><div class="sc-icon">🔥</div></div>
+      <div class="sc cp"><div class="sc-lbl">Nível</div><div class="sc-val" style="color:var(--purple)" id="sc-lv">1</div><div class="sc-sub" id="sc-lv-sub">Iniciante</div><div class="sc-icon">⭐</div></div>
     </div>
     <div class="g2">
       <div>
         <div class="card mb16">
-          <div class="stitle">HÃ¡bitos</div>
+          <div class="stitle">Hábitos</div>
           <div id="hoje-habitos"></div>
-          <button class="btn-add" onclick="openOv('ov-hb')">+ Novo hÃ¡bito</button>
+          <button class="btn-add" onclick="openOv('ov-hb')">+ Novo hábito</button>
         </div>
         <div class="card">
-          <div class="stitle">ðŸƒ Corrida â€” 4x/semana</div>
+          <div class="stitle">🏃 Corrida — 4x/semana</div>
           <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
             <span class="mono" style="font-size:32px;font-weight:700;color:var(--green)" id="run-n">0</span>
-            <span style="color:var(--text2);font-size:13px">/ 4 sessÃµes esta semana</span>
+            <span style="color:var(--text2);font-size:13px">/ 4 sessões esta semana</span>
           </div>
           <div class="pb"><div class="pf" id="run-bar" style="width:0%;background:var(--green)"></div></div>
           <div class="run-days" id="run-days"></div>
@@ -562,8 +680,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
       </div>
       <div>
         <div class="card mb16">
-          <div class="stitle">ReflexÃ£o do dia</div>
-          <textarea class="obs" id="obs-txt" placeholder="Como foi? O que quer melhorar amanhÃ£?"></textarea>
+          <div class="stitle">Reflexão do dia</div>
+          <textarea class="obs" id="obs-txt" placeholder="Como foi? O que quer melhorar amanhã?"></textarea>
         </div>
         <div class="card">
           <div class="stitle">Prompt do caderno</div>
@@ -571,7 +689,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
             <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;font-family:var(--mono)">Para hoje</div>
             <div style="font-size:14px;font-style:italic;line-height:1.6" id="prompt-hoje">...</div>
           </div>
-          <button class="btn-sm" onclick="nextPrompt()">â†» Outro prompt</button>
+          <button class="btn-sm" onclick="nextPrompt()">↻ Outro prompt</button>
         </div>
       </div>
     </div>
@@ -579,16 +697,16 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
   <!-- MAPA -->
   <div id="page-mapa" class="page">
-    <div class="ph"><div class="ph-title">ðŸ—ºï¸ Mapa de Progresso</div><div class="ph-sub">Fases que desbloqueiam com XP e disciplina</div></div>
+    <div class="ph"><div class="ph-title">🗺️ Mapa de Progresso</div><div class="ph-sub">Fases que desbloqueiam com XP e disciplina</div></div>
     <div class="g2">
       <div class="card"><div class="stitle">Jornada do Disciplinado</div><div class="fase-path" id="fase-path"></div></div>
-      <div><div class="card mb16"><div class="stitle">Fase atual</div><div id="fase-atual-info"></div></div><div class="card"><div class="stitle">PrÃ³ximas recompensas</div><div id="fase-proximas"></div></div></div>
+      <div><div class="card mb16"><div class="stitle">Fase atual</div><div id="fase-atual-info"></div></div><div class="card"><div class="stitle">Próximas recompensas</div><div id="fase-proximas"></div></div></div>
     </div>
   </div>
 
   <!-- ARENA -->
   <div id="page-arena" class="page">
-    <div class="ph"><div class="ph-title">ðŸŸï¸ Arena Semanal</div><div class="ph-sub">Desafios semanais com recompensas reais de XP</div></div>
+    <div class="ph"><div class="ph-title">🏟️ Arena Semanal</div><div class="ph-sub">Desafios semanais com recompensas reais de XP</div></div>
     <div class="g4 mb20" id="arena-stats"></div>
     <div class="g2 mb20">
       <div class="card"><div class="stitle">Desafios desta semana</div><div id="desafios-lista"></div></div>
@@ -598,25 +716,25 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
   <!-- STATS -->
   <div id="page-stats" class="page">
-    <div class="ph"><div class="ph-title">ðŸ“Š EstatÃ­sticas</div><div class="ph-sub">GrÃ¡ficos detalhados do seu progresso</div></div>
+    <div class="ph"><div class="ph-title">📊 Estatísticas</div><div class="ph-sub">Gráficos detalhados do seu progresso</div></div>
     <div class="g2 mb20">
-      <div class="card"><div class="stitle">XP por dia â€” 14 dias</div><div id="chart-xp"></div></div>
-      <div class="card"><div class="stitle">HÃ¡bitos por dia â€” 14 dias</div><div id="chart-hab"></div></div>
+      <div class="card"><div class="stitle">XP por dia — 14 dias</div><div id="chart-xp"></div></div>
+      <div class="card"><div class="stitle">Hábitos por dia — 14 dias</div><div id="chart-hab"></div></div>
     </div>
-    <div class="card mb20"><div class="stitle">Heatmap â€” Ãºltimos 60 dias</div><div id="heatmap-wrap"></div></div>
+    <div class="card mb20"><div class="stitle">Heatmap — últimos 60 dias</div><div id="heatmap-wrap"></div></div>
     <div class="g2">
-      <div class="card"><div class="stitle">Ranking de hÃ¡bitos</div><div id="rank-hab"></div></div>
+      <div class="card"><div class="stitle">Ranking de hábitos</div><div id="rank-hab"></div></div>
       <div class="card"><div class="stitle">Quantidades registradas</div><div id="stats-qty"></div></div>
     </div>
   </div>
 
   <!-- RPG -->
   <div id="page-rpg" class="page">
-    <div class="ph"><div class="ph-title">ðŸ§¬ Status RPG</div><div class="ph-sub">Atributos que crescem com seus hÃ¡bitos</div></div>
+    <div class="ph"><div class="ph-title">🧬 Status RPG</div><div class="ph-sub">Atributos que crescem com seus hábitos</div></div>
     <div class="g2 mb20">
       <div class="card" style="text-align:center;padding:28px">
-        <div style="font-size:64px;margin-bottom:12px" id="rpg-av">ðŸŒ±</div>
-        <div class="mono" style="font-size:22px;font-weight:700" id="rpg-lv-txt">NÃVEL 1</div>
+        <div style="font-size:64px;margin-bottom:12px" id="rpg-av">🌱</div>
+        <div class="mono" style="font-size:22px;font-weight:700" id="rpg-lv-txt">NÍVEL 1</div>
         <div style="font-size:13px;color:var(--text2);margin-top:3px" id="rpg-cls-txt">Iniciante</div>
         <div style="margin-top:18px"><div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-family:var(--mono)">XP TOTAL</div><div class="mono" style="font-size:36px;font-weight:700;color:var(--amber)" id="rpg-xp-tot">0</div></div>
         <div style="margin-top:14px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:5px;font-family:var(--mono)"><span>Progresso</span><span id="rpg-next"></span></div><div class="pb" style="height:10px"><div class="pf" id="rpg-xp-fill" style="background:linear-gradient(90deg,var(--amber2),var(--amber));width:0%"></div></div></div>
@@ -625,21 +743,21 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     </div>
     <div class="g3">
       <div class="card"><div class="stitle">Streak</div><div class="mono" style="font-size:48px;font-weight:700;color:var(--amber)" id="rpg-streak">0</div><div style="font-size:12px;color:var(--text2);margin-top:4px">dias seguidos</div></div>
-      <div class="card"><div class="stitle">Dias Perfeitos</div><div class="mono" style="font-size:48px;font-weight:700;color:var(--green)" id="rpg-perf">0</div><div style="font-size:12px;color:var(--text2);margin-top:4px">100% dos hÃ¡bitos</div></div>
+      <div class="card"><div class="stitle">Dias Perfeitos</div><div class="mono" style="font-size:48px;font-weight:700;color:var(--green)" id="rpg-perf">0</div><div style="font-size:12px;color:var(--text2);margin-top:4px">100% dos hábitos</div></div>
       <div class="card"><div class="stitle">Conquistas</div><div class="mono" style="font-size:48px;font-weight:700;color:var(--purple)" id="rpg-cq">0</div><div style="font-size:12px;color:var(--text2);margin-top:4px">desbloqueadas</div></div>
     </div>
   </div>
 
   <!-- METAS -->
   <div id="page-metas" class="page">
-    <div class="ph"><div class="ph-title">ðŸŽ¯ Metas 2026</div><div class="ph-sub"><span id="mt-dias">0</span> dias para 31/12/2026</div></div>
+    <div class="ph"><div class="ph-title">🎯 Metas 2026</div><div class="ph-sub"><span id="mt-dias">0</span> dias para 31/12/2026</div></div>
     <div class="g4 mb20" id="metas-stats"></div>
     <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap" id="mf-row">
       <button class="btn-sm" style="border-color:var(--green);color:var(--green)" onclick="filterMetas('todas',this)">Todas</button>
-      <button class="btn-sm" onclick="filterMetas('financas',this)">ðŸ’° FinanÃ§as</button>
-      <button class="btn-sm" onclick="filterMetas('saude',this)">ðŸ’ª SaÃºde</button>
-      <button class="btn-sm" onclick="filterMetas('carreira',this)">ðŸš€ Carreira</button>
-      <button class="btn-sm" onclick="filterMetas('pessoal',this)">ðŸŒ± Pessoal</button>
+      <button class="btn-sm" onclick="filterMetas('financas',this)">💰 Finanças</button>
+      <button class="btn-sm" onclick="filterMetas('saude',this)">💪 Saúde</button>
+      <button class="btn-sm" onclick="filterMetas('carreira',this)">🚀 Carreira</button>
+      <button class="btn-sm" onclick="filterMetas('pessoal',this)">🌱 Pessoal</button>
     </div>
     <div id="lista-metas"></div>
     <button class="btn-add" onclick="openOv('ov-mt')">+ Nova meta</button>
@@ -647,90 +765,213 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
   <!-- CONQUISTAS -->
   <div id="page-conquistas" class="page">
-    <div class="ph"><div class="ph-title">ðŸ† Conquistas</div><div class="ph-sub"><span id="cq-feitas">0</span> de <span id="cq-total">0</span> desbloqueadas</div></div>
+    <div class="ph"><div class="ph-title">🏆 Conquistas</div><div class="ph-sub"><span id="cq-feitas">0</span> de <span id="cq-total">0</span> desbloqueadas</div></div>
     <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn-sm" style="border-color:var(--green);color:var(--green)" onclick="filterCQ('todas',this)">Todas</button>
-      <button class="btn-sm" onclick="filterCQ('unlocked',this)">âœ… Obtidas</button>
-      <button class="btn-sm" onclick="filterCQ('locked',this)">ðŸ”’ PrÃ³ximas</button>
+      <button class="btn-sm" onclick="filterCQ('unlocked',this)">✅ Obtidas</button>
+      <button class="btn-sm" onclick="filterCQ('locked',this)">🔒 Próximas</button>
     </div>
     <div class="cq-grid" id="cq-grid"></div>
   </div>
 
+  <!-- ESTUDOS -->
+  <div id="page-estudos" class="page">
+    <div class="ph">
+      <div class="ph-title">📚 Módulo de Estudos</div>
+      <div class="ph-sub">Aprendizado contínuo e evolução consistente</div>
+    </div>
+    <div class="est-tabs">
+      <button class="est-tab active" onclick="estTab('dashboard',this)">📊 Dashboard</button>
+      <button class="est-tab" onclick="estTab('disciplinas',this)">📖 Disciplinas</button>
+      <button class="est-tab" onclick="estTab('sessao',this)">⏱ Sessão</button>
+      <button class="est-tab" onclick="estTab('questoes',this)">✏️ Questões</button>
+      <button class="est-tab" onclick="estTab('erros',this)">❌ Banco de Erros</button>
+      <button class="est-tab" onclick="estTab('revisoes',this)">🔁 Revisões</button>
+      <button class="est-tab" onclick="estTab('ia-estudos',this)">🤖 IA Coach</button>
+    </div>
+    <div id="est-content"></div>
+  </div>
+
+  <!-- RANKING GLOBAL -->
+  <div id="page-arena-global" class="page">
+    <div class="ph">
+      <div class="ph-title">🌍 Ranking Global</div>
+      <div class="ph-sub" id="ranking-sub">Top jogadores de todos os tempos</div>
+    </div>
+    <div class="g4 mb20" id="ranking-stats"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="stitle">🏆 Top XP — todos os tempos</div>
+        <div id="ranking-xp-lista"></div>
+      </div>
+      <div class="card">
+        <div class="stitle">🔥 Top Streak — dias seguidos</div>
+        <div id="ranking-streak-lista"></div>
+      </div>
+    </div>
+    <div class="card mt16">
+      <div class="stitle">Sua posição</div>
+      <div id="minha-posicao"></div>
+    </div>
+  </div>
+
+  <!-- COMPETIÇÃO SEMANAL -->
+  <div id="page-competicao" class="page">
+    <div class="ph">
+      <div class="ph-title">⚡ Competição Semanal</div>
+      <div class="ph-sub" id="comp-sub">A semana reinicia toda segunda-feira</div>
+    </div>
+    <div class="card mb20" style="background:linear-gradient(135deg,var(--amber-bg),var(--purple-bg));border-color:var(--amber)22">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="font-size:48px">⚡</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">Batalha da Semana</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:4px">Quem acumular mais pontos até domingo vence. Pontos = XP + bônus de streak + dias perfeitos.</div>
+          <div style="font-size:12px;color:var(--amber);margin-top:6px;font-family:var(--mono)" id="comp-timer">Carregando...</div>
+        </div>
+      </div>
+    </div>
+    <div class="g4 mb20" id="comp-stats"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="stitle">Pódio da semana</div>
+        <div id="podio-lista"></div>
+      </div>
+      <div class="card">
+        <div class="stitle">Como pontuar</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+          <div class="card-sm" style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;color:var(--text)">⚡ Cada hábito marcado</span>
+            <span style="font-family:var(--mono);font-size:13px;color:var(--amber)">= XP do hábito</span>
+          </div>
+          <div class="card-sm" style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;color:var(--text)">🔥 Dia com ≥60% hábitos</span>
+            <span style="font-family:var(--mono);font-size:13px;color:var(--amber)">+50 pts bônus</span>
+          </div>
+          <div class="card-sm" style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;color:var(--text)">👑 Dia perfeito (100%)</span>
+            <span style="font-family:var(--mono);font-size:13px;color:var(--amber)">+100 pts bônus</span>
+          </div>
+          <div class="card-sm" style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;color:var(--text)">🏃 Corrida feita</span>
+            <span style="font-family:var(--mono);font-size:13px;color:var(--amber)">+30 pts</span>
+          </div>
+          <div class="card-sm" style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;color:var(--text)">✍️ Caderno escrito</span>
+            <span style="font-family:var(--mono);font-size:13px;color:var(--amber)">+20 pts</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:10px;background:var(--amber-bg);border-radius:var(--r);border:1px solid var(--amber)22">
+          <div style="font-size:11px;color:var(--amber);font-family:var(--mono);margin-bottom:4px">RECOMPENSAS DO VENCEDOR</div>
+          <div style="font-size:12px;color:var(--text2)">🥇 1º lugar — Badge exclusivo + título "Campeão da Semana"</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">🥈 2º e 3º lugar — Badge de pódio no perfil</div>
+        </div>
+      </div>
+    </div>
+    <div class="card mt16">
+      <div class="stitle">Sua posição esta semana</div>
+      <div id="minha-posicao-semanal"></div>
+    </div>
+  </div>
+
   <!-- CADERNO -->
   <div id="page-caderno" class="page">
-    <div class="ph"><div class="ph-title">âœï¸ Caderno MÃ¡gico</div><div class="ph-sub">Tire os pensamentos da cabeÃ§a. +20 XP por dia escrito.</div></div>
+    <div class="ph"><div class="ph-title">✍️ Caderno Mágico</div><div class="ph-sub">Tire os pensamentos da cabeça. +20 XP por dia escrito.</div></div>
     <div style="background:linear-gradient(135deg,var(--pink-bg),var(--purple-bg));border:1px solid var(--pink)22;border-radius:var(--r2);padding:20px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start">
-      <div style="font-size:36px">ðŸ““</div>
+      <div style="font-size:36px">📓</div>
       <div>
-        <div style="font-size:16px;font-weight:700;margin-bottom:5px">Seu caderno mÃ¡gico</div>
-        <div style="font-size:13px;color:var(--pink);opacity:.9;line-height:1.6">Escrever transforma pensamentos circulares em algo concreto â€” e aÃ­ eles param de sugar energia.</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:5px">Seu caderno mágico</div>
+        <div style="font-size:13px;color:var(--pink);opacity:.9;line-height:1.6">Escrever transforma pensamentos circulares em algo concreto — e aí eles param de sugar energia.</div>
         <div style="display:flex;gap:4px;margin-top:10px;flex-wrap:wrap" id="escrita-dots"></div>
       </div>
     </div>
     <div class="g2 mb20">
-      <div class="card"><div class="stitle">Prompts de hoje</div><div id="prompts-lista"></div><button class="btn-add" onclick="nextPrompt();renderCaderno()" style="margin-top:6px">â†» Mais prompts</button></div>
+      <div class="card"><div class="stitle">Prompts de hoje</div><div id="prompts-lista"></div><button class="btn-add" onclick="nextPrompt();renderCaderno()" style="margin-top:6px">↻ Mais prompts</button></div>
       <div class="card"><div class="stitle">Formas de escrever</div><div style="display:flex;flex-direction:column;gap:9px">
-        <div class="card-sm"><div style="font-size:13px;font-weight:600;margin-bottom:3px">ðŸŒŠ Escrita livre</div><div style="font-size:12px;color:var(--text2)">5 a 10 minutos, sem filtro, sem parar.</div></div>
-        <div class="card-sm"><div style="font-size:13px;font-weight:600;margin-bottom:3px">ðŸ“‹ GratidÃ£o</div><div style="font-size:12px;color:var(--text2)">3 coisas boas de hoje.</div></div>
-        <div class="card-sm"><div style="font-size:13px;font-weight:600;margin-bottom:3px">ðŸ” ReflexÃ£o</div><div style="font-size:12px;color:var(--text2)">O que foi bom? O que pesou? O que farei diferente?</div></div>
-        <div class="card-sm"><div style="font-size:13px;font-weight:600;margin-bottom:3px">ðŸ’­ Descarregar</div><div style="font-size:12px;color:var(--text2)">O que estÃ¡ circulando na cabeÃ§a? Tira agora.</div></div>
+        <div class="card-sm"><div style="font-size:13px;font-weight:600;margin-bottom:3px">🌊 Escrita livre</div><div style="font-size:12px;color:var(--text2)">5 a 10 minutos, sem filtro, sem parar.</div></div>
+        <div class="card-sm"><div style="font-size:13px;font-weight:600;margin-bottom:3px">📋 Gratidão</div><div style="font-size:12px;color:var(--text2)">3 coisas boas de hoje.</div></div>
+        <div class="card-sm"><div style="font-size:13px;font-weight:600;margin-bottom:3px">🔍 Reflexão</div><div style="font-size:12px;color:var(--text2)">O que foi bom? O que pesou? O que farei diferente?</div></div>
+        <div class="card-sm"><div style="font-size:13px;font-weight:600;margin-bottom:3px">💭 Descarregar</div><div style="font-size:12px;color:var(--text2)">O que está circulando na cabeça? Tira agora.</div></div>
       </div></div>
     </div>
-    <div class="card"><div class="stitle">HistÃ³rico â€” Ãºltimas 2 semanas</div><div id="escrita-hist"></div></div>
+    <div class="card"><div class="stitle">Histórico — últimas 2 semanas</div><div id="escrita-hist"></div></div>
   </div>
-  <div id="page-estudos" class="page">
-  <div class="ph"><div class="ph-title">ðŸ“š MÃ³dulo de Estudos</div><div class="ph-sub">Concurso CÃ¢mara ArujÃ¡ â€¢ Petrobras 2026</div></div>
-  <div class="card mb20" id="est-countdown"></div>
-  <div class="est-tabs">
-    <button class="est-tab active" onclick="estTab('dashboard',this)">ðŸ“Š Dashboard</button>
-    <button class="est-tab" onclick="estTab('disciplinas',this)">ðŸ“– Disciplinas</button>
-    <button class="est-tab" onclick="estTab('sessao',this)">â± SessÃ£o</button>
-    <button class="est-tab" onclick="estTab('questoes',this)">âœï¸ QuestÃµes</button>
-    <button class="est-tab" onclick="estTab('erros',this)">âŒ Banco de Erros</button>
-  </div>
-  <div id="est-content"></div>
-</div>
 </main>
 </div>
 </div>
 
 <script>
+// Carregar Supabase SDK de forma assíncrona para evitar conflito
+(function() {
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload = function() {
+    window._SB_SDK = window.supabase;
+    if(typeof window.supabase !== 'undefined') {
+      delete window.supabase;
+    }
+    window._SB_READY = true;
+    if(window._SB_INIT) window._SB_INIT();
+  };
+  document.head.appendChild(s);
+})();
+</script>
+<script>
 // ================================================================
-//  âš™ï¸  CONFIGURAÃ‡ÃƒO SUPABASE â€” COLE SUAS CREDENCIAIS AQUI
+//  ⚙️  CONFIGURAÇÃO SUPABASE — COLE SUAS CREDENCIAIS AQUI
 // ================================================================
 const SUPABASE_URL = 'https://mmfvdzecujukjlfbpjia.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZnZkemVjdWp1a2psZmJwamlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NzgzOTIsImV4cCI6MjA5NTI1NDM5Mn0.8oby1ts9cRmJ8GnHwJOQlgTDR6jaIlxyhqKVmqHQ2HY';
 // ================================================================
 
 const CONFIGURED = SUPABASE_URL !== 'SEU_SUPABASE_URL' && SUPABASE_KEY !== 'SEU_SUPABASE_KEY';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let sb = null;
 let currentUser = null;
 let saveTimeout = null;
 
-// Verificar sessÃ£o existente e escutar mudanÃ§as de auth
-sb.auth.getSession().then(({data:{session}}) => {
-  if(session?.user) enterApp(session.user);
-});
-sb.auth.onAuthStateChange(async(event,session) => {
-  if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED') && session?.user && !currentUser) {
-    await enterApp(session.user);
+// Inicializar quando o SDK carregar
+window._SB_INIT = function() {
+  if (CONFIGURED && window._SB_SDK) {
+    sb = window._SB_SDK.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Escutar mudanças de auth
+    sb.auth.onAuthStateChange(async(event,session) => {
+      if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED') && session?.user && !currentUser) {
+        await enterApp(session.user);
+      }
+      if(event==='SIGNED_OUT'){
+        currentUser=null; S={};
+        document.getElementById('app-screen').style.display='none';
+        document.getElementById('login-screen').style.display='flex';
+        document.getElementById('login-screen').style.visibility='visible';
+        showLogin();
+      }
+    });
+    // Verificar sessão existente
+    sb.auth.getSession().then(({data:{session}}) => {
+      if(session?.user && !currentUser) enterApp(session.user);
+      else if(!session){
+        // Sem sessão — mostrar login
+        document.getElementById('login-screen').style.display='flex';
+      }
+    });
   }
-});
+};
+if(window._SB_READY) window._SB_INIT();
 
 if (!CONFIGURED) {
-  // Modo offline â€” usa localStorage, sem login
+  // Modo offline — usa localStorage, sem login
   document.getElementById('config-warning').style.display = 'block';
   document.getElementById('setup-guide').style.display = 'block';
-  // Supabase configurado â€” sem necessidade de modo demo
+  // Supabase configurado — sem necessidade de modo demo
 }
 
 function enterDemoMode(){
   // Carrega dados do localStorage sem precisar de login
-  currentUser = { id: 'local', email: 'local@demo', user_metadata: { full_name: 'UsuÃ¡rio Local' } };
+  currentUser = { id: 'local', email: 'local@demo', user_metadata: { full_name: 'Usuário Local' } };
   try { const r = localStorage.getItem('vida_demo'); S = r ? sanitize(JSON.parse(r)) : blank(); } catch(e){ S = blank(); }
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
-  document.getElementById('av-name').textContent = 'UsuÃ¡rio Local';
+  document.getElementById('av-name').textContent = 'Usuário Local';
   document.getElementById('av-email').textContent = 'modo offline';
   renderHoje(); renderSidebar(); checkCQ();
 }
@@ -738,86 +979,86 @@ function enterDemoMode(){
 // ================================================================
 // CONSTANTS
 // ================================================================
-const DIAS=['Seg','Ter','Qua','Qui','Sex','SÃ¡b','Dom'];
+const DIAS=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
 const HOJE_IDX=(()=>{const d=new Date().getDay();return d===0?6:d-1;})();
 
 const LEVELS=[
-  {min:0,    max:500,   nome:'Iniciante',    cls:'INICIANTE',    icon:'ðŸŒ±'},
-  {min:500,  max:1500,  nome:'Aprendiz',     cls:'APRENDIZ',     icon:'ðŸ”¥'},
-  {min:1500, max:3500,  nome:'Guerreiro',    cls:'GUERREIRO',    icon:'âš”ï¸'},
-  {min:3500, max:7000,  nome:'CampeÃ£o',      cls:'CAMPEÃƒO',      icon:'ðŸ…'},
-  {min:7000, max:14000, nome:'LendÃ¡rio',     cls:'LENDÃRIO',     icon:'ðŸ‘‘'},
-  {min:14000,max:30000, nome:'Transcendente',cls:'TRANSCENDENTE',icon:'ðŸ’Ž'},
-  {min:30000,max:99999, nome:'Imortal',      cls:'IMORTAL',      icon:'âœ¨'},
+  {min:0,    max:500,   nome:'Iniciante',    cls:'INICIANTE',    icon:'🌱'},
+  {min:500,  max:1500,  nome:'Aprendiz',     cls:'APRENDIZ',     icon:'🔥'},
+  {min:1500, max:3500,  nome:'Guerreiro',    cls:'GUERREIRO',    icon:'⚔️'},
+  {min:3500, max:7000,  nome:'Campeão',      cls:'CAMPEÃO',      icon:'🏅'},
+  {min:7000, max:14000, nome:'Lendário',     cls:'LENDÁRIO',     icon:'👑'},
+  {min:14000,max:30000, nome:'Transcendente',cls:'TRANSCENDENTE',icon:'💎'},
+  {min:30000,max:99999, nome:'Imortal',      cls:'IMORTAL',      icon:'✨'},
 ];
 
 const FASES=[
-  {icon:'ðŸŒ±',nome:'Despertar',    req:0,    reqStr:'Fase inicial',                  desc:'VocÃª decidiu mudar. Isso jÃ¡ Ã© 80% do caminho.',         rewards:['Acesso ao jogo','HÃ¡bitos desbloqueados']},
-  {icon:'ðŸ”¥',nome:'IgniÃ§Ã£o',      req:500,  reqStr:'500 XP',                        desc:'O fogo comeÃ§ou. ConsistÃªncia Ã© a chave agora.',         rewards:['Badge Aprendiz','Desafios semanais']},
-  {icon:'âš”ï¸',nome:'Batalha',      req:1500, reqStr:'1.500 XP + 7 dias de streak',   desc:'A guerra mais importante Ã© consigo mesmo.',            rewards:['Avatar Guerreiro','Mapa de atributos']},
-  {icon:'ðŸ…',nome:'ConsistÃªncia', req:3500, reqStr:'3.500 XP + 14 dias de streak',  desc:'HÃ¡bito virou identidade. VocÃª nÃ£o estÃ¡ tentando â€” vocÃª Ã©.', rewards:['Badge CampeÃ£o','Stats avanÃ§adas']},
-  {icon:'ðŸ‘‘',nome:'DomÃ­nio',      req:7000, reqStr:'7.000 XP + 5 dias perfeitos',   desc:'A disciplina agora Ã© automÃ¡tica. Outros percebem.',     rewards:['Avatar LendÃ¡rio','Desafios Elite']},
-  {icon:'ðŸ’Ž',nome:'TranscendÃªncia',req:14000,reqStr:'14.000 XP + 30 dias streak',   desc:'VocÃª transcendeu a versÃ£o anterior de si mesmo.',      rewards:['Avatar Diamante','Modo Mestre']},
-  {icon:'âœ¨',nome:'Imortal',      req:30000,reqStr:'30.000 XP + 60 dias streak',    desc:'Seu nÃ­vel de disciplina Ã© permanente. Ã‰ quem vocÃª Ã©.', rewards:['Avatar Imortal','Hall da Fama']},
+  {icon:'🌱',nome:'Despertar',    req:0,    reqStr:'Fase inicial',                  desc:'Você decidiu mudar. Isso já é 80% do caminho.',         rewards:['Acesso ao jogo','Hábitos desbloqueados']},
+  {icon:'🔥',nome:'Ignição',      req:500,  reqStr:'500 XP',                        desc:'O fogo começou. Consistência é a chave agora.',         rewards:['Badge Aprendiz','Desafios semanais']},
+  {icon:'⚔️',nome:'Batalha',      req:1500, reqStr:'1.500 XP + 7 dias de streak',   desc:'A guerra mais importante é consigo mesmo.',            rewards:['Avatar Guerreiro','Mapa de atributos']},
+  {icon:'🏅',nome:'Consistência', req:3500, reqStr:'3.500 XP + 14 dias de streak',  desc:'Hábito virou identidade. Você não está tentando — você é.', rewards:['Badge Campeão','Stats avançadas']},
+  {icon:'👑',nome:'Domínio',      req:7000, reqStr:'7.000 XP + 5 dias perfeitos',   desc:'A disciplina agora é automática. Outros percebem.',     rewards:['Avatar Lendário','Desafios Elite']},
+  {icon:'💎',nome:'Transcendência',req:14000,reqStr:'14.000 XP + 30 dias streak',   desc:'Você transcendeu a versão anterior de si mesmo.',      rewards:['Avatar Diamante','Modo Mestre']},
+  {icon:'✨',nome:'Imortal',      req:30000,reqStr:'30.000 XP + 60 dias streak',    desc:'Seu nível de disciplina é permanente. É quem você é.', rewards:['Avatar Imortal','Hall da Fama']},
 ];
 
-const PROMPTS=['O que estÃ¡ ocupando minha cabeÃ§a agora?','O que eu gostaria de largar hoje?','O que foi bom essa semana, mesmo que pequeno?','O que estou evitando pensar?','Se eu pudesse mudar uma coisa agora, o que seria?','O que me deixou bem hoje?','O que me pesa e eu preciso soltar?','Que pensamento fica voltando?','Como eu quero me sentir amanhÃ£?','O que estou com medo de admitir para mim mesmo?','3 coisas pelas quais sou grato hoje.','O que meu corpo estÃ¡ sentindo agora?','O que foi difÃ­cil hoje e como lidei?','Que versÃ£o de mim eu quero ser essa semana?','O que me aproxima dos meus objetivos hoje?'];
+const PROMPTS=['O que está ocupando minha cabeça agora?','O que eu gostaria de largar hoje?','O que foi bom essa semana, mesmo que pequeno?','O que estou evitando pensar?','Se eu pudesse mudar uma coisa agora, o que seria?','O que me deixou bem hoje?','O que me pesa e eu preciso soltar?','Que pensamento fica voltando?','Como eu quero me sentir amanhã?','O que estou com medo de admitir para mim mesmo?','3 coisas pelas quais sou grato hoje.','O que meu corpo está sentindo agora?','O que foi difícil hoje e como lidei?','Que versão de mim eu quero ser essa semana?','O que me aproxima dos meus objetivos hoje?'];
 
 const DESAFIOS=[
-  {id:'d1',nome:'Semana ImpecÃ¡vel', desc:'Complete â‰¥80% dos hÃ¡bitos todos os dias',           prize:'+300 XP',cor:'green'},
+  {id:'d1',nome:'Semana Impecável', desc:'Complete ≥80% dos hábitos todos os dias',           prize:'+300 XP',cor:'green'},
   {id:'d2',nome:'4 Corridas',       desc:'Corra 4x esta semana. Sem desculpa.',                prize:'+150 XP',cor:'blue'},
   {id:'d3',nome:'Caderno Aberto',   desc:'Escreva no caderno todos os dias desta semana',      prize:'+120 XP',cor:'pink'},
-  {id:'d4',nome:'Mente Limpa',      desc:'Sem cannabis e sem Ã¡lcool os 7 dias',                prize:'+200 XP',cor:'teal'},
-  {id:'d5',nome:'Corpo em Chamas',  desc:'Academia + alimentaÃ§Ã£o limpa todos os dias',         prize:'+180 XP',cor:'amber'},
+  {id:'d4',nome:'Mente Limpa',      desc:'Sem cannabis e sem álcool os 7 dias',                prize:'+200 XP',cor:'teal'},
+  {id:'d5',nome:'Corpo em Chamas',  desc:'Academia + alimentação limpa todos os dias',         prize:'+180 XP',cor:'amber'},
 ];
 
 const CQ=[
-  {id:'q01',icon:'ðŸŒ…',nome:'Primeiro passo',    desc:'Complete todos os hÃ¡bitos pela 1Âª vez',       xp:100,cond:s=>s.diasPerfeitos>=1},
-  {id:'q02',icon:'ðŸ”¥',nome:'Em chamas',          desc:'7 dias seguidos de streak',                   xp:200,cond:s=>s.streakMax>=7},
-  {id:'q03',icon:'ðŸ’Ž',nome:'Diamante',           desc:'30 dias de streak',                           xp:500,cond:s=>s.streakMax>=30},
-  {id:'q04',icon:'ðŸƒ',nome:'Corredor',           desc:'4 corridas em 1 semana',                      xp:150,cond:s=>s.corridaSem>=1},
-  {id:'q05',icon:'âœï¸',nome:'Escritor',           desc:'Caderno 7 dias seguidos',                     xp:150,cond:s=>s.escritaStreak>=7},
-  {id:'q06',icon:'ðŸ“š',nome:'Leitor voraz',       desc:'Leitura 20 vezes',                            xp:200,cond:s=>(s.hc?.leitura||0)>=20},
-  {id:'q07',icon:'ðŸ§˜',nome:'Mente zen',          desc:'MeditaÃ§Ã£o 15 vezes',                          xp:150,cond:s=>(s.hc?.medit||0)>=15},
-  {id:'q08',icon:'ðŸ·',nome:'30 dias sÃ³brio',     desc:'30 dias sem beber',                           xp:300,cond:s=>(s.hc?.beber||0)>=30},
-  {id:'q09',icon:'ðŸŒ¿',nome:'Mente clara',        desc:'30 dias sem cannabis',                        xp:300,cond:s=>(s.hc?.cannabis||0)>=30},
-  {id:'q10',icon:'â­',nome:'1.000 XP',           desc:'Acumule 1.000 XP',                            xp:100,cond:s=>s.totalXP>=1000},
-  {id:'q11',icon:'ðŸ†',nome:'5.000 XP',           desc:'Acumule 5.000 XP',                            xp:250,cond:s=>s.totalXP>=5000},
-  {id:'q12',icon:'ðŸ‘‘',nome:'10.000 XP',          desc:'Acumule 10.000 XP',                           xp:500,cond:s=>s.totalXP>=10000},
-  {id:'q13',icon:'ðŸ’ª',nome:'ForÃ§a constante',    desc:'Academia 20 vezes',                           xp:200,cond:s=>(s.hc?.academia||0)>=20},
-  {id:'q14',icon:'ðŸ¥—',nome:'NutriÃ§Ã£o',           desc:'AlimentaÃ§Ã£o limpa 20 dias',                   xp:200,cond:s=>(s.hc?.alim||0)>=20},
-  {id:'q15',icon:'ðŸŽ“',nome:'Estudante',          desc:'Estudo 15 vezes',                             xp:150,cond:s=>(s.hc?.estudo||0)>=15},
-  {id:'q16',icon:'âš¡',nome:'Semana perfeita',    desc:'3 dias perfeitos no total',                   xp:200,cond:s=>s.diasPerfeitos>=3},
-  {id:'q17',icon:'ðŸš€',nome:'Guerreiro',          desc:'Alcance 1.500 XP',                            xp:300,cond:s=>s.totalXP>=1500},
-  {id:'q18',icon:'ðŸŒ™',nome:'MÃªs disciplinado',   desc:'60% hÃ¡bitos por 30 dias',                     xp:400,cond:s=>s.diasBons>=30},
+  {id:'q01',icon:'🌅',nome:'Primeiro passo',    desc:'Complete todos os hábitos pela 1ª vez',       xp:100,cond:s=>s.diasPerfeitos>=1},
+  {id:'q02',icon:'🔥',nome:'Em chamas',          desc:'7 dias seguidos de streak',                   xp:200,cond:s=>s.streakMax>=7},
+  {id:'q03',icon:'💎',nome:'Diamante',           desc:'30 dias de streak',                           xp:500,cond:s=>s.streakMax>=30},
+  {id:'q04',icon:'🏃',nome:'Corredor',           desc:'4 corridas em 1 semana',                      xp:150,cond:s=>s.corridaSem>=1},
+  {id:'q05',icon:'✍️',nome:'Escritor',           desc:'Caderno 7 dias seguidos',                     xp:150,cond:s=>s.escritaStreak>=7},
+  {id:'q06',icon:'📚',nome:'Leitor voraz',       desc:'Leitura 20 vezes',                            xp:200,cond:s=>(s.hc?.leitura||0)>=20},
+  {id:'q07',icon:'🧘',nome:'Mente zen',          desc:'Meditação 15 vezes',                          xp:150,cond:s=>(s.hc?.medit||0)>=15},
+  {id:'q08',icon:'🍷',nome:'30 dias sóbrio',     desc:'30 dias sem beber',                           xp:300,cond:s=>(s.hc?.beber||0)>=30},
+  {id:'q09',icon:'🌿',nome:'Mente clara',        desc:'30 dias sem cannabis',                        xp:300,cond:s=>(s.hc?.cannabis||0)>=30},
+  {id:'q10',icon:'⭐',nome:'1.000 XP',           desc:'Acumule 1.000 XP',                            xp:100,cond:s=>s.totalXP>=1000},
+  {id:'q11',icon:'🏆',nome:'5.000 XP',           desc:'Acumule 5.000 XP',                            xp:250,cond:s=>s.totalXP>=5000},
+  {id:'q12',icon:'👑',nome:'10.000 XP',          desc:'Acumule 10.000 XP',                           xp:500,cond:s=>s.totalXP>=10000},
+  {id:'q13',icon:'💪',nome:'Força constante',    desc:'Academia 20 vezes',                           xp:200,cond:s=>(s.hc?.academia||0)>=20},
+  {id:'q14',icon:'🥗',nome:'Nutrição',           desc:'Alimentação limpa 20 dias',                   xp:200,cond:s=>(s.hc?.alim||0)>=20},
+  {id:'q15',icon:'🎓',nome:'Estudante',          desc:'Estudo 15 vezes',                             xp:150,cond:s=>(s.hc?.estudo||0)>=15},
+  {id:'q16',icon:'⚡',nome:'Semana perfeita',    desc:'3 dias perfeitos no total',                   xp:200,cond:s=>s.diasPerfeitos>=3},
+  {id:'q17',icon:'🚀',nome:'Guerreiro',          desc:'Alcance 1.500 XP',                            xp:300,cond:s=>s.totalXP>=1500},
+  {id:'q18',icon:'🌙',nome:'Mês disciplinado',   desc:'60% hábitos por 30 dias',                     xp:400,cond:s=>s.diasBons>=30},
 ];
 
 const HABITOS_DEF=[
-  {id:'academia',icon:'ðŸ’ª',nome:'Academia',          cor:'green', xp:20,cat:'saude',       unit:''},
-  {id:'cannabis',icon:'ðŸŒ¿',nome:'Sem cannabis',       cor:'teal',  xp:25,cat:'disciplina',  unit:''},
-  {id:'naom',    icon:'ðŸ”ž',nome:'NÃƒO M',             cor:'purple',xp:25,cat:'disciplina',  unit:''},
-  {id:'alim',    icon:'ðŸ¥—',nome:'AlimentaÃ§Ã£o limpa',  cor:'green', xp:15,cat:'saude',       unit:''},
-  {id:'beber',   icon:'ðŸ·',nome:'Sem beber',          cor:'teal',  xp:25,cat:'disciplina',  unit:''},
-  {id:'medit',   icon:'ðŸ§˜',nome:'MeditaÃ§Ã£o',          cor:'blue',  xp:20,cat:'mente',       unit:'min'},
-  {id:'leitura', icon:'ðŸ“š',nome:'Leitura',            cor:'amber', xp:15,cat:'mente',       unit:'pÃ¡g'},
-  {id:'estudo',  icon:'ðŸŽ“',nome:'Estudo',             cor:'blue',  xp:20,cat:'produtividade',unit:'min'},
-  {id:'escrita', icon:'âœï¸',nome:'Escrever no caderno',cor:'pink',  xp:20,cat:'mente',       unit:''},
+  {id:'academia',icon:'💪',nome:'Academia',          cor:'green', xp:20,cat:'saude',       unit:''},
+  {id:'cannabis',icon:'🌿',nome:'Sem cannabis',       cor:'teal',  xp:25,cat:'disciplina',  unit:''},
+  {id:'naom',    icon:'🔞',nome:'NÃO M',             cor:'purple',xp:25,cat:'disciplina',  unit:''},
+  {id:'alim',    icon:'🥗',nome:'Alimentação limpa',  cor:'green', xp:15,cat:'saude',       unit:''},
+  {id:'beber',   icon:'🍷',nome:'Sem beber',          cor:'teal',  xp:25,cat:'disciplina',  unit:''},
+  {id:'medit',   icon:'🧘',nome:'Meditação',          cor:'blue',  xp:20,cat:'mente',       unit:'min'},
+  {id:'leitura', icon:'📚',nome:'Leitura',            cor:'amber', xp:15,cat:'mente',       unit:'pág'},
+  {id:'estudo',  icon:'🎓',nome:'Estudo',             cor:'blue',  xp:20,cat:'produtividade',unit:'min'},
+  {id:'escrita', icon:'✍️',nome:'Escrever no caderno',cor:'pink',  xp:20,cat:'mente',       unit:''},
 ];
 
 const METAS_DEF=[
-  {id:1, cat:'financas',icon:'ðŸ’°',nome:'Juntar 20K',             atual:7000, total:20000,  unidade:'R$',    cor:'green', desc:'Reserva financeira do ano'},
-  {id:2, cat:'financas',icon:'ðŸ’¼',nome:'1MM de vendas',          atual:0,    total:1000000,unidade:'R$',    cor:'amber', desc:'Meta de vendas 2026'},
-  {id:3, cat:'financas',icon:'ðŸ“±',nome:'Faturamento MarmoApp',   atual:0,    total:100000, unidade:'R$',    cor:'blue',  desc:'Faturamento do app'},
-  {id:4, cat:'financas',icon:'ðŸš—',nome:'Quitar dÃ©bitos (Logan)', atual:0,    total:100,    unidade:'%',     cor:'red',   desc:'Quitar dÃ­vidas do carro'},
-  {id:5, cat:'saude',   icon:'ðŸƒ',nome:'Correr 5km em 30 min',  atual:16,   total:100,    unidade:'%',     cor:'green', desc:'Condicionamento fÃ­sico'},
-  {id:6, cat:'saude',   icon:'ðŸ·',nome:'Sem Ã¡lcool o ano todo', atual:56,   total:353,    unidade:'dias',  cor:'teal',  desc:'01/01 â†’ 31/12/2026'},
-  {id:7, cat:'saude',   icon:'ðŸŒ¿',nome:'Sem ganja',             atual:45,   total:313,    unidade:'dias',  cor:'teal',  desc:'Clareza mental'},
-  {id:8, cat:'saude',   icon:'ðŸ¥—',nome:'AlimentaÃ§Ã£o limpa',     atual:39,   total:292,    unidade:'dias',  cor:'green', desc:'ConsistÃªncia'},
-  {id:9, cat:'saude',   icon:'ðŸ’ª',nome:'Treino consistente',    atual:55,   total:292,    unidade:'treinos',cor:'green',desc:'Academia o ano todo'},
-  {id:10,cat:'carreira',icon:'ðŸŒ',nome:'Trabalho internacional',atual:0,    total:100,    unidade:'%',     cor:'blue',  desc:'Oportunidade no exterior'},
-  {id:11,cat:'carreira',icon:'ðŸ¤–',nome:'MBA em IA',             atual:0,    total:100,    unidade:'%',     cor:'purple',desc:'02/01 â†’ 31/12/2026'},
-  {id:12,cat:'pessoal', icon:'ðŸ“š',nome:'Ler 20 livros',         atual:1,    total:20,     unidade:'livros',cor:'amber', desc:'~1 por mÃªs'},
-  {id:13,cat:'pessoal', icon:'ðŸ‡ºðŸ‡¸',nome:'FluÃªncia em inglÃªs',   atual:0,    total:100,    unidade:'%',     cor:'blue',  desc:'Falar, escrever e pensar em inglÃªs'},
+  {id:1, cat:'financas',icon:'💰',nome:'Juntar 20K',             atual:7000, total:20000,  unidade:'R$',    cor:'green', desc:'Reserva financeira do ano'},
+  {id:2, cat:'financas',icon:'💼',nome:'1MM de vendas',          atual:0,    total:1000000,unidade:'R$',    cor:'amber', desc:'Meta de vendas 2026'},
+  {id:3, cat:'financas',icon:'📱',nome:'Faturamento MarmoApp',   atual:0,    total:100000, unidade:'R$',    cor:'blue',  desc:'Faturamento do app'},
+  {id:4, cat:'financas',icon:'🚗',nome:'Quitar débitos (Logan)', atual:0,    total:100,    unidade:'%',     cor:'red',   desc:'Quitar dívidas do carro'},
+  {id:5, cat:'saude',   icon:'🏃',nome:'Correr 5km em 30 min',  atual:16,   total:100,    unidade:'%',     cor:'green', desc:'Condicionamento físico'},
+  {id:6, cat:'saude',   icon:'🍷',nome:'Sem álcool o ano todo', atual:56,   total:353,    unidade:'dias',  cor:'teal',  desc:'01/01 → 31/12/2026'},
+  {id:7, cat:'saude',   icon:'🌿',nome:'Sem ganja',             atual:45,   total:313,    unidade:'dias',  cor:'teal',  desc:'Clareza mental'},
+  {id:8, cat:'saude',   icon:'🥗',nome:'Alimentação limpa',     atual:39,   total:292,    unidade:'dias',  cor:'green', desc:'Consistência'},
+  {id:9, cat:'saude',   icon:'💪',nome:'Treino consistente',    atual:55,   total:292,    unidade:'treinos',cor:'green',desc:'Academia o ano todo'},
+  {id:10,cat:'carreira',icon:'🌍',nome:'Trabalho internacional',atual:0,    total:100,    unidade:'%',     cor:'blue',  desc:'Oportunidade no exterior'},
+  {id:11,cat:'carreira',icon:'🤖',nome:'MBA em IA',             atual:0,    total:100,    unidade:'%',     cor:'purple',desc:'02/01 → 31/12/2026'},
+  {id:12,cat:'pessoal', icon:'📚',nome:'Ler 20 livros',         atual:1,    total:20,     unidade:'livros',cor:'amber', desc:'~1 por mês'},
+  {id:13,cat:'pessoal', icon:'🇺🇸',nome:'Fluência em inglês',   atual:0,    total:100,    unidade:'%',     cor:'blue',  desc:'Falar, escrever e pensar em inglês'},
 ];
 
 const COR={
@@ -831,7 +1072,7 @@ const COR={
 };
 
 // ================================================================
-// STATE â€” per user, saved to Supabase
+// STATE — per user, saved to Supabase
 // ================================================================
 // Dia sendo editado (0 = hoje, 1 = ontem, etc.)
 let EDITING_DAY = 0;
@@ -844,7 +1085,35 @@ function blank(){return{
   totalXP:0,hc:{},conquistas:[],
   streakMax:0,diasPerfeitos:0,diasBons:0,corridaSem:0,escritaStreak:0,
   promptIdx:0,metaFilter:'todas',cqFilter:'todas',nid:100,
-  estudos:{disciplinas:[{id:'d1',nome:'LÃ­ngua Portuguesa',emoji:'ðŸ“',cor:'#4488ff'},{id:'d2',nome:'MatemÃ¡tica e RaciocÃ­nio LÃ³gico',emoji:'ðŸ”¢',cor:'#00cc88'},{id:'d3',nome:'InformÃ¡tica BÃ¡sica',emoji:'ðŸ’»',cor:'#aa66ff'},{id:'d4',nome:'Redes e Internet',emoji:'ðŸŒ',cor:'#ff6644'},{id:'d5',nome:'SeguranÃ§a da InformaÃ§Ã£o',emoji:'ðŸ”’',cor:'#ff4488'},{id:'d6',nome:'Hardware e Software',emoji:'ðŸ–¥ï¸',cor:'#44aaff'},{id:'d7',nome:'Banco de Dados',emoji:'ðŸ—„ï¸',cor:'#88ff44'},{id:'d8',nome:'Direito Administrativo',emoji:'âš–ï¸',cor:'#ffcc00'},{id:'d9',nome:'Lei de LicitaÃ§Ãµes 14.133/21',emoji:'ðŸ“œ',cor:'#ff8800'},{id:'d10',nome:'LegislaÃ§Ã£o Municipal',emoji:'ðŸ›ï¸',cor:'#cc44ff'},{id:'d11',nome:'AdministraÃ§Ã£o Geral',emoji:'ðŸ“Š',cor:'#ffaa00'},{id:'d12',nome:'GestÃ£o de Processos',emoji:'âš™ï¸',cor:'#00ffaa'},{id:'d13',nome:'Planejamento EstratÃ©gico',emoji:'ðŸŽ¯',cor:'#ff44aa'},{id:'d14',nome:'GestÃ£o de Pessoas',emoji:'ðŸ‘¥',cor:'#44ffcc'},{id:'d15',nome:'FinanÃ§as e Contabilidade',emoji:'ðŸ’°',cor:'#aaff00'}],sessoes:[],questoes:[],erros:[],metas:{horasSemanais:15,horasMensais:60,questoesMes:300,sessoesSemana:7,prazoProva:'2026-08-30',concursoFoco:'CÃ¢mara ArujÃ¡'},did:10,qid:10,eid:10},
+  // MÓDULO ESTUDOS
+  estudos:{
+    disciplinas:[
+      // BASE COMUM (Arujá + Petrobras)
+      {id:'d1',nome:'Língua Portuguesa',emoji:'📝',cor:'#4488ff',concurso:'ambos'},
+      {id:'d2',nome:'Matemática e Raciocínio Lógico',emoji:'🔢',cor:'#00cc88',concurso:'ambos'},
+      {id:'d3',nome:'Informática Básica',emoji:'💻',cor:'#aa66ff',concurso:'ambos'},
+      // CÂMARA ARUJÁ — Técnico em Informática
+      {id:'d4',nome:'Redes e Internet',emoji:'🌐',cor:'#ff6644',concurso:'aruja'},
+      {id:'d5',nome:'Segurança da Informação',emoji:'🔒',cor:'#ff4488',concurso:'aruja'},
+      {id:'d6',nome:'Hardware e Software',emoji:'🖥️',cor:'#44aaff',concurso:'aruja'},
+      {id:'d7',nome:'Banco de Dados',emoji:'🗄️',cor:'#88ff44',concurso:'aruja'},
+      // CÂMARA ARUJÁ — Administrativo/Licitação
+      {id:'d8',nome:'Direito Administrativo',emoji:'⚖️',cor:'#ffcc00',concurso:'aruja'},
+      {id:'d9',nome:'Lei de Licitações 14.133/21',emoji:'📜',cor:'#ff8800',concurso:'aruja'},
+      {id:'d10',nome:'Legislação Municipal',emoji:'🏛️',cor:'#cc44ff',concurso:'aruja'},
+      // PETROBRAS — Administração (Cesgranrio)
+      {id:'d11',nome:'Administração Geral',emoji:'📊',cor:'#ffaa00',concurso:'petrobras'},
+      {id:'d12',nome:'Gestão de Processos',emoji:'⚙️',cor:'#00ffaa',concurso:'petrobras'},
+      {id:'d13',nome:'Planejamento Estratégico',emoji:'🎯',cor:'#ff44aa',concurso:'petrobras'},
+      {id:'d14',nome:'Gestão de Pessoas',emoji:'👥',cor:'#44ffcc',concurso:'petrobras'},
+      {id:'d15',nome:'Finanças e Contabilidade',emoji:'💰',cor:'#aaff00',concurso:'petrobras'},
+    ],
+    sessoes:[],
+    questoes:[],
+    erros:[],
+    metas:{horasSemanais:15,horasMensais:60,questoesMes:300,sessoesSemana:7,prazoProva:'2026-08-30',concursoFoco:'Câmara Arujá'},
+    did:10,qid:10,eid:10,
+  },
 };}
 
 let S = {};
@@ -865,28 +1134,38 @@ function sanitize(data){
 }
 
 // ================================================================
-// SYNC â€” Supabase read/write
+// SYNC — Supabase read/write
 // ================================================================
 async function loadFromDB(){
   setSyncStatus('syncing');
-  let timedOut=false;const timer=setTimeout(()=>{timedOut=true;if(!S||!S.habitos)S=blank();},8000);
   if(!CONFIGURED||!currentUser||currentUser.id==='local'){
     try{ const r=localStorage.getItem('vida_demo'); S=r?sanitize(JSON.parse(r)):blank(); }
     catch(e){ S=blank(); }
     setSyncStatus('ok'); return;
   }
+  // Timeout de 8 segundos para não travar
+  let timedOut = false;
+  const timer = setTimeout(()=>{ timedOut=true; S=blank(); setSyncStatus('error'); }, 8000);
   try{
     const {data,error}=await sb.from('user_data').select('data').eq('user_id',currentUser.id).single();
     if(error&&error.code==='PGRST116'){ S=blank(); await saveToDB(); }
     else if(error){ throw error; }
     else{ S=sanitize(data?.data||{}); }
-    setSyncStatus('ok');
-  }catch(e){ console.error('Load error:',e); S=blank(); setSyncStatus('error'); }
+    if(!timedOut){ clearTimeout(timer); setSyncStatus('ok'); }
+  }catch(e){ 
+    clearTimeout(timer);
+    console.error('Load error:',e); 
+    if(!S||!S.habitos) S=blank(); 
+    setSyncStatus('error'); 
+  }
 }
 
 async function saveToDB(){
   if(!currentUser) return;
-  // Modo offline â€” salva no localStorage
+  // Sincronizar perfil público a cada save
+  syncProfile().catch(()=>{});
+  syncWeekly().catch(()=>{});
+  // Modo offline — salva no localStorage
   if(!CONFIGURED || currentUser.id === 'local'){
     try{ localStorage.setItem('vida_demo', JSON.stringify(S)); setSyncStatus('ok'); flashSaved(); }
     catch(e){ setSyncStatus('error'); }
@@ -902,7 +1181,7 @@ async function saveToDB(){
 }
 
 function sv(){
-  // debounce â€” save after 800ms of inactivity
+  // debounce — save after 800ms of inactivity
   clearTimeout(saveTimeout);
   saveTimeout=setTimeout(()=>saveToDB(),800);
 }
@@ -920,7 +1199,7 @@ function flashSaved(){
   const txt=document.getElementById('save-txt');
   if(!txt) return;
   const now=new Date();
-  txt.textContent='salvo Ã s '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  txt.textContent='salvo às '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
 }
 
 // autosave on tab switch / close
@@ -991,14 +1270,14 @@ async function registerEmail(){
     el.style.background='var(--green-bg)';
     el.style.borderColor='var(--green)44';
     el.style.color='var(--green)';
-    el.textContent='âœ… Conta criada! Verifique seu email para confirmar.';
+    el.textContent='✅ Conta criada! Verifique seu email para confirmar.';
   }
 }
 
 function translateError(msg){
   if(msg.includes('Invalid login')) return 'Email ou senha incorretos.';
   if(msg.includes('Email not confirmed')) return 'Confirme seu email antes de entrar.';
-  if(msg.includes('User already registered')) return 'Este email jÃ¡ estÃ¡ cadastrado. FaÃ§a login.';
+  if(msg.includes('User already registered')) return 'Este email já está cadastrado. Faça login.';
   if(msg.includes('Password should')) return 'Senha deve ter pelo menos 6 caracteres.';
   return msg;
 }
@@ -1015,16 +1294,20 @@ async function logout(){
 async function enterApp(user){
   currentUser=user;
   showLoading('Carregando seus dados...');
-  await Promise.race([loadFromDB(), new Promise(r=>setTimeout(r,5000))]);
+  // Timeout de segurança — se travar, entra mesmo assim
+  const timeout = new Promise(resolve => setTimeout(resolve, 5000));
+  await Promise.race([loadFromDB(), timeout]);
   document.getElementById('login-screen').style.display='none';
+  document.getElementById('login-screen').style.visibility='hidden';
   document.getElementById('app-screen').style.display='block';
+  document.getElementById('app-screen').style.visibility='visible';
   // set avatar
   const meta=user.user_metadata||{};
   const name=meta.full_name||meta.name||user.email?.split('@')[0]||'Jogador';
   document.getElementById('av-name').textContent=name;
   document.getElementById('av-email').textContent=user.email||'';
   if(meta.avatar_url||meta.picture){
-    document.getElementById('av-inner').innerHTML=`<img src="${meta.avatar_url||meta.picture}" alt="avatar" onerror="this.parentElement.innerHTML='<span id=av-emoji>ðŸŒ±</span>'"/>`;
+    document.getElementById('av-inner').innerHTML=`<img src="${meta.avatar_url||meta.picture}" alt="avatar" onerror="this.parentElement.innerHTML='<span id=av-emoji>🌱</span>'"/>`;
   }
   renderHoje();
   renderSidebar();
@@ -1037,7 +1320,7 @@ async function enterApp(user){
 // HELPERS
 // ================================================================
 function dk(offset){
-  // offset=0 Ã© hoje, offset=1 Ã© ontem, etc.
+  // offset=0 é hoje, offset=1 é ontem, etc.
   const o = offset !== undefined ? offset : EDITING_DAY;
   const d = new Date();
   d.setDate(d.getDate() - o);
@@ -1061,10 +1344,10 @@ function getLv(xp){for(let i=LEVELS.length-1;i>=0;i--)if(xp>=LEVELS[i].min)retur
 function calcStreak(){let s=0;for(let i=0;i<365;i++){const d=new Date();d.setDate(d.getDate()-i);const day=S.dias[d.toISOString().slice(0,10)];if(!day)break;if(S.habitos.filter(h=>day.done[h.id]).length>=Math.ceil(S.habitos.length*0.6))s++;else break;}return s;}
 function calcEStr(){let s=0;for(let i=S.escritaHist.length-1;i>=0;i--){if(S.escritaHist[i]?.done)s++;else break;}return s;}
 function catCls(c){return{financas:'ta',saude:'tg',carreira:'tb',pessoal:'tt',mente:'tp',produtividade:'tb',disciplina:'tr'}[c]||'tg';}
-function catLbl(c){return{financas:'FinanÃ§as',saude:'SaÃºde',carreira:'Carreira',pessoal:'Pessoal',mente:'Mente',produtividade:'Produtividade',disciplina:'Disciplina'}[c]||c;}
+function catLbl(c){return{financas:'Finanças',saude:'Saúde',carreira:'Carreira',pessoal:'Pessoal',mente:'Mente',produtividade:'Produtividade',disciplina:'Disciplina'}[c]||c;}
 
 // TOAST
-function toast(msg,cls='',icon='âš¡',xpVal=''){
+function toast(msg,cls='',icon='⚡',xpVal=''){
   const c=document.getElementById('toasts');const t=document.createElement('div');
   t.className=`toast ${cls}`;
   t.innerHTML=`<span class="t-icon">${icon}</span><span class="t-msg">${msg}</span>${xpVal?`<span class="t-xp">+${xpVal} XP</span>`:''}`;
@@ -1103,11 +1386,11 @@ function renderSidebar(){
     .map(s=>`<div class="sm-row"><div class="sm-lbl">${s.l}</div><div class="sm-bar"><div class="sm-fill" style="width:${s.v}%;background:${s.c}"></div></div><div class="sm-val">${s.v}</div></div>`).join('');
 }
 
-// CALENDÃRIO RETROATIVO
+// CALENDÁRIO RETROATIVO
 function selectDay(offset){
   EDITING_DAY = offset;
 
-  // Atualizar banner de ediÃ§Ã£o
+  // Atualizar banner de edição
   const banner = document.getElementById('editing-banner');
   const label  = document.getElementById('editing-label');
   if(offset === 0){
@@ -1128,13 +1411,13 @@ function renderRetroCal(){
   const el = document.getElementById('retro-cal');
   if(!el) return;
 
-  const DIAS_ABREV = ['Dom','Seg','Ter','Qua','Qui','Sex','SÃ¡b'];
+  const DIAS_ABREV = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   const today = new Date();
 
   el.innerHTML = Array.from({length:7}, (_,i) => {
     const d = new Date(today);
     d.setDate(d.getDate() - (6-i)); // do mais antigo ao mais recente
-    const offset = 6 - i;           // offset 6=6 dias atrÃ¡s, 0=hoje
+    const offset = 6 - i;           // offset 6=6 dias atrás, 0=hoje
     const key = d.toISOString().slice(0,10);
     const day = S.dias[key];
     const done = day ? S.habitos.filter(h=>day.done[h.id]).length : 0;
@@ -1151,11 +1434,11 @@ function renderRetroCal(){
     else if(pct>0) cls += ' partial';
     else cls += ' empty-day';
 
-    const pctLabel = isToday && !day ? 'â€”' : pct+'%';
+    const pctLabel = isToday && !day ? '—' : pct+'%';
     const dayName  = isToday ? 'Hoje' : DIAS_ABREV[d.getDay()];
 
     return `<div class="${cls}" onclick="selectDay(${offset})">
-      ${isEdited ? '<span class="retro-edited">âœï¸</span>' : ''}
+      ${isEdited ? '<span class="retro-edited">✏️</span>' : ''}
       <div class="retro-day-name">${dayName}</div>
       <div class="retro-day-num">${d.getDate()}</div>
       <div class="retro-day-pct">${pctLabel}</div>
@@ -1183,13 +1466,13 @@ function renderHoje(){
   document.getElementById('hoje-habitos').innerHTML=S.habitos.map(h=>{
     const c=COR[h.cor]||COR.green,isDone=!!day.done[h.id],cnt=S.hc[h.id]||0,qv=day.qty[h.id]||'';
     return `<div class="hi ${isDone?'done':''}" onclick="toggleH('${h.id}')">
-      <div class="hcheck ${isDone?'on':''}" style="${isDone?`background:${c.f};border-color:transparent`:`border-color:${c.f}44`}">${isDone?'âœ“':''}</div>
+      <div class="hcheck ${isDone?'on':''}" style="${isDone?`background:${c.f};border-color:transparent`:`border-color:${c.f}44`}">${isDone?'✓':''}</div>
       <div class="hemoji">${h.icon}</div>
-      <div class="hinfo"><div class="hname">${h.nome}</div><div class="hmeta"><span class="tag ${catCls(h.cat)}">${catLbl(h.cat)}</span>${cnt>0?` Â· ${cnt}x total`:''}</div></div>
+      <div class="hinfo"><div class="hname">${h.nome}</div><div class="hmeta"><span class="tag ${catCls(h.cat)}">${catLbl(h.cat)}</span>${cnt>0?` · ${cnt}x total`:''}</div></div>
       ${h.unit?`<div class="qty-wrap" onclick="event.stopPropagation()"><input class="qty-inp" type="number" min="0" value="${qv}" placeholder="0" oninput="setQty('${h.id}',this.value)"/><span class="qty-unit">${h.unit}</span></div>`:''}
       <div class="hxp" style="background:${c.b};color:${c.t};border:1px solid ${c.f}22">+${h.xp}</div>
-      ${cnt>0?`<div class="hstreak">ðŸ”¥${cnt}</div>`:''}
-      <div class="del" onclick="event.stopPropagation();delH('${h.id}')">âœ•</div>
+      ${cnt>0?`<div class="hstreak">🔥${cnt}</div>`:''}
+      <div class="del" onclick="event.stopPropagation();delH('${h.id}')">✕</div>
     </div>`;
   }).join('');
   renderCorrida();renderSidebar();
@@ -1204,7 +1487,7 @@ function toggleH(id){
   const isRetro = EDITING_DAY > 0;
 
   if(day.done[id]){
-    // SÃ³ soma XP se for hoje (nÃ£o retroativo)
+    // Só soma XP se for hoje (não retroativo)
     if(!isRetro){
       S.totalXP+=h.xp;day.xp=(day.xp||0)+h.xp;
       toast(h.nome,'txp',h.icon,h.xp);
@@ -1213,9 +1496,9 @@ function toggleH(id){
         document.getElementById('dco').classList.add('show');
       }
     } else {
-      // Retroativo: mostra confirmaÃ§Ã£o sem somar XP
+      // Retroativo: mostra confirmação sem somar XP
       const editDate=new Date();editDate.setDate(editDate.getDate()-EDITING_DAY);
-      toast('Registrado em '+editDate.toLocaleDateString('pt-BR',{day:'numeric',month:'short'}),'','âœï¸');
+      toast('Registrado em '+editDate.toLocaleDateString('pt-BR',{day:'numeric',month:'short'}),'','✏️');
       if(S.habitos.every(x=>day.done[x.id])) S.diasPerfeitos++;
     }
     S.hc[id]=(S.hc[id]||0)+1;
@@ -1241,12 +1524,12 @@ function renderCorrida(){
   const wk=gwk(),cnt=wk.filter(Boolean).length;
   document.getElementById('run-n').textContent=cnt;
   document.getElementById('run-bar').style.width=Math.round(cnt/4*100)+'%';
-  document.getElementById('run-days').innerHTML=DIAS.map((d,i)=>`<div class="rd ${wk[i]?'on':''}" onclick="toggleRun(${i})"><span class="rd-icon">${wk[i]?'ðŸƒ':'Â·'}</span><span class="rd-name">${d}</span></div>`).join('');
+  document.getElementById('run-days').innerHTML=DIAS.map((d,i)=>`<div class="rd ${wk[i]?'on':''}" onclick="toggleRun(${i})"><span class="rd-icon">${wk[i]?'🏃':'·'}</span><span class="rd-name">${d}</span></div>`).join('');
 }
 
 function toggleRun(idx){
   const wk=gwk();wk[idx]=!wk[idx];const day=gday();
-  if(wk[idx]){S.totalXP+=30;day.xp=(day.xp||0)+30;toast('Corrida feita!','txp','ðŸƒ',30);}
+  if(wk[idx]){S.totalXP+=30;day.xp=(day.xp||0)+30;toast('Corrida feita!','txp','🏃',30);}
   else{S.totalXP=Math.max(0,S.totalXP-30);day.xp=Math.max(0,(day.xp||0)-30);}
   if(wk.filter(Boolean).length>=4)S.corridaSem=(S.corridaSem||0)+1;
   sv();renderCorrida();renderSidebar();
@@ -1260,7 +1543,7 @@ function renderMapa(){
   const cur=FASES.reduce((c,_,i)=>ok(i)?i:c,0);
   document.getElementById('fase-path').innerHTML=FASES.map((f,i)=>{
     const done=i<cur,active=i===cur,locked=i>cur,st=done?'done':active?'active':'locked';
-    const reqTxt=done?'âœ… ConcluÃ­da':active?f.reqStr:`ðŸ”’ ${f.reqStr}`;
+    const reqTxt=done?'✅ Concluída':active?f.reqStr:`🔒 ${f.reqStr}`;
     const reqColor=done?'var(--green)':active?'var(--amber)':'var(--text3)';
     return `${i>0?`<div class="fase-conn" style="background:linear-gradient(180deg,${done||active?'var(--green)':'var(--border2)'},${done?'var(--green)':'var(--border)'})"></div>`:''}
     <div class="fase-row">
@@ -1269,7 +1552,7 @@ function renderMapa(){
         <div class="fase-nome" style="color:${locked?'var(--text3)':'var(--text)'}">${f.nome}</div>
         <div class="fase-desc">${f.desc}</div>
         <div class="fase-req" style="color:${reqColor}">${reqTxt}</div>
-        ${!locked?`<div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">${f.rewards.map(r=>`<span class="tag tg" style="font-size:10px">âœ“ ${r}</span>`).join('')}</div>`:''}
+        ${!locked?`<div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">${f.rewards.map(r=>`<span class="tag tg" style="font-size:10px">✓ ${r}</span>`).join('')}</div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -1279,7 +1562,7 @@ function renderMapa(){
     <div style="font-size:18px;font-weight:700;color:var(--amber)">${cf.nome}</div>
     <div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.5">${cf.desc}</div>
     <div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:var(--r)">
-      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">XP para prÃ³xima fase</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">XP para próxima fase</div>
       <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:5px">${xp.toLocaleString()} / ${(FASES[Math.min(cur+1,FASES.length-1)].req).toLocaleString()} XP</div>
       <div class="pb" style="height:8px"><div class="pf" style="width:${cur<FASES.length-1?Math.min(100,Math.round(xp/FASES[cur+1].req*100)):100}%;background:var(--amber)"></div></div>
     </div>
@@ -1288,7 +1571,7 @@ function renderMapa(){
   document.getElementById('fase-proximas').innerHTML=nx.map((f,i)=>`<div style="padding:10px;background:var(--bg3);border-radius:var(--r);margin-bottom:8px;opacity:${i===0?1:0.6}">
     <div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">${f.icon}</span><div><div style="font-size:13px;font-weight:600;color:var(--text2)">${f.nome}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">${f.req.toLocaleString()} XP</div></div></div>
     <div style="margin-top:7px;display:flex;gap:4px;flex-wrap:wrap">${f.rewards.map(r=>`<span class="tag ta">${r}</span>`).join('')}</div>
-  </div>`).join('')||`<div class="empty">Fase mÃ¡xima! ðŸ†</div>`;
+  </div>`).join('')||`<div class="empty">Fase máxima! 🏆</div>`;
 }
 
 // ARENA
@@ -1301,8 +1584,8 @@ function renderArena(){
   const xpW=wkD.reduce((s,dt)=>s+(S.dias[dt]?.xp||0),0);
   const best=wkD.reduce((b,dt)=>{const n=S.dias[dt]?S.habitos.filter(h=>S.dias[dt].done[h.id]).length:0;return n>b.n?{n,dt}:b;},{n:0,dt:''});
   document.getElementById('arena-stats').innerHTML=[
-    {l:'Checks semana',v:`${total}/${maxP}`,c:'cg',i:'âœ…'},{l:'MÃ©dia diÃ¡ria',v:avg+'%',c:'cb',i:'ðŸ“Š'},
-    {l:'XP da semana',v:'+'+xpW,c:'ca',i:'âš¡'},{l:'Melhor dia',v:best.n>0?DIAS[wkD.indexOf(best.dt)]:'â€”',c:'cp',i:'ðŸ†'},
+    {l:'Checks semana',v:`${total}/${maxP}`,c:'cg',i:'✅'},{l:'Média diária',v:avg+'%',c:'cb',i:'📊'},
+    {l:'XP da semana',v:'+'+xpW,c:'ca',i:'⚡'},{l:'Melhor dia',v:best.n>0?DIAS[wkD.indexOf(best.dt)]:'—',c:'cp',i:'🏆'},
   ].map(s=>`<div class="sc ${s.c}"><div class="sc-lbl">${s.l}</div><div class="sc-val">${s.v}</div><div class="sc-icon">${s.i}</div></div>`).join('');
   document.getElementById('desafios-lista').innerHTML=DESAFIOS.map(d=>{
     const c=COR[d.cor]||COR.green;
@@ -1325,13 +1608,13 @@ function renderArena(){
       <div class="dc-days">${Array.from({length:max},(_,i)=>`<div class="dc-day ${(d.id==='d2'?wkC[i]:dOk[i])?'done':i===HOJE_IDX?'today':''}">${i+1}</div>`).join('')}</div>
     </div>`;
   }).join('');
-  let h=`<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px"><thead><tr><th style="text-align:left;padding:5px 8px;color:var(--text2);font-weight:400;border-bottom:1px solid var(--border);font-size:11px">HÃ¡bito</th>${DIAS.map((d,i)=>`<th style="padding:5px;color:${i===HOJE_IDX?'var(--green)':'var(--text2)'};font-weight:${i===HOJE_IDX?700:400};border-bottom:1px solid var(--border);text-align:center;font-size:11px">${d}</th>`).join('')}<th style="padding:5px;color:var(--text2);font-weight:400;border-bottom:1px solid var(--border);text-align:center;font-size:11px">%</th></tr></thead><tbody>`;
+  let h=`<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px"><thead><tr><th style="text-align:left;padding:5px 8px;color:var(--text2);font-weight:400;border-bottom:1px solid var(--border);font-size:11px">Hábito</th>${DIAS.map((d,i)=>`<th style="padding:5px;color:${i===HOJE_IDX?'var(--green)':'var(--text2)'};font-weight:${i===HOJE_IDX?700:400};border-bottom:1px solid var(--border);text-align:center;font-size:11px">${d}</th>`).join('')}<th style="padding:5px;color:var(--text2);font-weight:400;border-bottom:1px solid var(--border);text-align:center;font-size:11px">%</th></tr></thead><tbody>`;
   S.habitos.forEach(hb=>{
     const c=COR[hb.cor]||COR.green;const dones=wkD.map(dt=>!!(S.dias[dt]&&S.dias[dt].done[hb.id]));const tot=dones.filter(Boolean).length;
     h+=`<tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 8px;color:var(--text)">${hb.icon} ${hb.nome}</td>${dones.map(dv=>`<td style="text-align:center;padding:5px"><div style="width:16px;height:16px;border-radius:4px;${dv?`background:${c.b};border:1px solid ${c.f}44;color:${c.t}`:
-    'border:1px solid var(--border2);'};margin:auto;display:flex;align-items:center;justify-content:center;font-size:9px">${dv?'âœ“':''}</div></td>`).join('')}<td style="text-align:center;padding:5px;font-weight:700;color:${c.t};font-family:var(--mono)">${Math.round(tot/7*100)}%</td></tr>`;
+    'border:1px solid var(--border2);'};margin:auto;display:flex;align-items:center;justify-content:center;font-size:9px">${dv?'✓':''}</div></td>`).join('')}<td style="text-align:center;padding:5px;font-weight:700;color:${c.t};font-family:var(--mono)">${Math.round(tot/7*100)}%</td></tr>`;
   });
-  h+=`<tr style="background:var(--bg3)"><td style="padding:5px 8px;color:var(--text)">ðŸƒ Corrida</td>${wkC.map(dv=>`<td style="text-align:center;padding:5px"><div style="width:16px;height:16px;border-radius:4px;${dv?'background:var(--green-bg);border:1px solid var(--green)44;color:var(--green)':'border:1px solid var(--border2);'};margin:auto;display:flex;align-items:center;justify-content:center;font-size:9px">${dv?'âœ“':''}</div></td>`).join('')}<td style="text-align:center;padding:5px;font-weight:700;color:var(--green);font-family:var(--mono)">${Math.round(wkC.filter(Boolean).length/4*100)}%</td></tr></tbody></table>`;
+  h+=`<tr style="background:var(--bg3)"><td style="padding:5px 8px;color:var(--text)">🏃 Corrida</td>${wkC.map(dv=>`<td style="text-align:center;padding:5px"><div style="width:16px;height:16px;border-radius:4px;${dv?'background:var(--green-bg);border:1px solid var(--green)44;color:var(--green)':'border:1px solid var(--border2);'};margin:auto;display:flex;align-items:center;justify-content:center;font-size:9px">${dv?'✓':''}</div></td>`).join('')}<td style="text-align:center;padding:5px;font-weight:700;color:var(--green);font-family:var(--mono)">${Math.round(wkC.filter(Boolean).length/4*100)}%</td></tr></tbody></table>`;
   document.getElementById('semana-table').innerHTML=h;
 }
 
@@ -1349,25 +1632,25 @@ function renderStats(){
   document.getElementById('rank-hab').innerHTML=habS.map((h,i)=>{const c=COR[h.cor]||COR.green,cnt=S.hc[h.id]||0;return `<div class="rank-item"><div class="rank-pos ${['rp1','rp2','rp3'][i]||''}">${i+1}</div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${h.icon} ${h.nome}</span><span style="color:${c.t};font-family:var(--mono)">${cnt}x</span></div><div class="pb"><div class="pf" style="width:${mxC?Math.round(cnt/mxC*100):0}%;background:${c.f}"></div></div></div></div>`;}).join('');
   const qtyD={};Object.values(S.dias).forEach(day=>Object.entries(day.qty||{}).forEach(([id,v])=>{if(v&&parseFloat(v)>0)qtyD[id]=(qtyD[id]||0)+parseFloat(v);}));
   const qH=S.habitos.filter(h=>h.unit&&qtyD[h.id]>0);
-  document.getElementById('stats-qty').innerHTML=qH.length?qH.map(h=>{const c=COR[h.cor]||COR.green,tot=qtyD[h.id]||0;return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:20px">${h.icon}</span><div style="flex:1"><div style="font-size:13px">${h.nome}</div></div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:${c.t}">${tot.toLocaleString('pt-BR')} <span style="font-size:12px;font-weight:400;color:var(--text2)">${h.unit}</span></div></div>`;}).join(''):`<div class="empty">Registre quantidades nos hÃ¡bitos para ver aqui.</div>`;
+  document.getElementById('stats-qty').innerHTML=qH.length?qH.map(h=>{const c=COR[h.cor]||COR.green,tot=qtyD[h.id]||0;return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:20px">${h.icon}</span><div style="flex:1"><div style="font-size:13px">${h.nome}</div></div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:${c.t}">${tot.toLocaleString('pt-BR')} <span style="font-size:12px;font-weight:400;color:var(--text2)">${h.unit}</span></div></div>`;}).join(''):`<div class="empty">Registre quantidades nos hábitos para ver aqui.</div>`;
 }
 
 // RPG
 function renderRPG(){
   const xp=S.totalXP,lv=getLv(xp),next=LEVELS[lv.lvl-1];
   const pctBar=next&&lv.lvl<LEVELS.length?Math.round(((xp-next.min)/(next.max-next.min))*100):100;
-  document.getElementById('rpg-av').textContent=lv.icon;document.getElementById('rpg-lv-txt').textContent='NÃVEL '+lv.lvl;
+  document.getElementById('rpg-av').textContent=lv.icon;document.getElementById('rpg-lv-txt').textContent='NÍVEL '+lv.lvl;
   document.getElementById('rpg-cls-txt').textContent=lv.nome;document.getElementById('rpg-xp-tot').textContent=xp.toLocaleString('pt-BR');
   document.getElementById('rpg-xp-fill').style.width=pctBar+'%';
-  document.getElementById('rpg-next').textContent=next&&lv.lvl<LEVELS.length?((next.max-xp).toLocaleString('pt-BR')+' XP restantes'):'MÃ¡ximo!';
+  document.getElementById('rpg-next').textContent=next&&lv.lvl<LEVELS.length?((next.max-xp).toLocaleString('pt-BR')+' XP restantes'):'Máximo!';
   document.getElementById('rpg-streak').textContent=calcStreak();document.getElementById('rpg-perf').textContent=S.diasPerfeitos;document.getElementById('rpg-cq').textContent=S.conquistas.length;
   const attrs=[
-    {n:'âš”ï¸ Disciplina',v:Math.min(100,Math.round(((S.hc?.cannabis||0)+(S.hc?.beber||0)+(S.hc?.naom||0))/0.9)),c:'var(--purple)'},
-    {n:'ðŸ’ª Corpo',v:Math.min(100,Math.round(((S.hc?.academia||0)+(S.hc?.alim||0))*1.5)),c:'var(--green)'},
-    {n:'ðŸ§  Mente',v:Math.min(100,Math.round(((S.hc?.medit||0)+(S.hc?.leitura||0)+(S.hc?.escrita||0))*1.2)),c:'var(--blue)'},
-    {n:'ðŸ“š Conhecimento',v:Math.min(100,Math.round(((S.hc?.estudo||0)+(S.hc?.leitura||0))*2)),c:'var(--amber)'},
-    {n:'ðŸ”¥ Energia',v:Math.min(100,calcStreak()*5),c:'var(--red)'},
-    {n:'âœ¨ Aura',v:Math.min(100,Math.round(S.totalXP/100)),c:'var(--pink)'},
+    {n:'⚔️ Disciplina',v:Math.min(100,Math.round(((S.hc?.cannabis||0)+(S.hc?.beber||0)+(S.hc?.naom||0))/0.9)),c:'var(--purple)'},
+    {n:'💪 Corpo',v:Math.min(100,Math.round(((S.hc?.academia||0)+(S.hc?.alim||0))*1.5)),c:'var(--green)'},
+    {n:'🧠 Mente',v:Math.min(100,Math.round(((S.hc?.medit||0)+(S.hc?.leitura||0)+(S.hc?.escrita||0))*1.2)),c:'var(--blue)'},
+    {n:'📚 Conhecimento',v:Math.min(100,Math.round(((S.hc?.estudo||0)+(S.hc?.leitura||0))*2)),c:'var(--amber)'},
+    {n:'🔥 Energia',v:Math.min(100,calcStreak()*5),c:'var(--red)'},
+    {n:'✨ Aura',v:Math.min(100,Math.round(S.totalXP/100)),c:'var(--pink)'},
   ];
   document.getElementById('rpg-attrs').innerHTML=attrs.map(a=>`<div class="attr"><div class="attr-head"><div class="attr-nm">${a.n}</div><div class="attr-vl" style="color:${a.c}">${a.v}</div></div><div class="attr-bar"><div class="attr-fill" style="width:${a.v}%;background:${a.c}"></div></div></div>`).join('');
 }
@@ -1377,24 +1660,24 @@ function renderMetas(){
   const f=S.metaFilter||'todas',dias=Math.ceil((new Date('2026-12-31')-new Date())/86400000);
   document.getElementById('mt-dias').textContent=dias;
   const all=S.metas,media=Math.round(all.reduce((s,m)=>s+pct(m),0)/Math.max(all.length,1));
-  document.getElementById('metas-stats').innerHTML=[{l:'Total',v:all.length,c:'cg',i:'ðŸŽ¯'},{l:'MÃ©dia',v:media+'%',c:'cb',i:'ðŸ“Š'},{l:'Iniciadas',v:all.filter(m=>m.atual>0).length,c:'ca',i:'ðŸš€'},{l:'Dias',v:dias,c:'cp',i:'â°'}].map(s=>`<div class="sc ${s.c}"><div class="sc-lbl">${s.l}</div><div class="sc-val">${s.v}</div><div class="sc-icon">${s.i}</div></div>`).join('');
+  document.getElementById('metas-stats').innerHTML=[{l:'Total',v:all.length,c:'cg',i:'🎯'},{l:'Média',v:media+'%',c:'cb',i:'📊'},{l:'Iniciadas',v:all.filter(m=>m.atual>0).length,c:'ca',i:'🚀'},{l:'Dias',v:dias,c:'cp',i:'⏰'}].map(s=>`<div class="sc ${s.c}"><div class="sc-lbl">${s.l}</div><div class="sc-val">${s.v}</div><div class="sc-icon">${s.i}</div></div>`).join('');
   const list=f==='todas'?all:all.filter(m=>m.cat===f);
-  document.getElementById('lista-metas').innerHTML=list.length?list.map(m=>{const c=COR[m.cor]||COR.blue,p=pct(m);return `<div class="mc"><div class="mc-top"><div class="mc-icon">${m.icon}</div><div style="flex:1"><div class="mc-name">${m.nome}</div><div class="mc-desc">${m.desc||''}</div><div style="margin-top:4px"><span class="tag ${catCls(m.cat)}">${catLbl(m.cat)}</span></div></div><div class="mc-pct" style="color:${c.t}">${p}%</div><div class="del" onclick="delMeta(${m.id})">âœ•</div></div><div class="mc-vals">${fmtV(m)}</div><div class="pb" style="height:8px"><div class="pf" style="width:${p}%;background:${c.f}"></div></div><input type="range" class="meta-slider" min="0" max="100" value="${p}" step="1" style="accent-color:${c.f}" oninput="updMeta(${m.id},this.value)"/></div>`;}).join(''):`<div class="empty">Nenhuma meta aqui ainda.</div>`;
+  document.getElementById('lista-metas').innerHTML=list.length?list.map(m=>{const c=COR[m.cor]||COR.blue,p=pct(m);return `<div class="mc"><div class="mc-top"><div class="mc-icon">${m.icon}</div><div style="flex:1"><div class="mc-name">${m.nome}</div><div class="mc-desc">${m.desc||''}</div><div style="margin-top:4px"><span class="tag ${catCls(m.cat)}">${catLbl(m.cat)}</span></div></div><div class="mc-pct" style="color:${c.t}">${p}%</div><div class="del" onclick="delMeta(${m.id})">✕</div></div><div class="mc-vals">${fmtV(m)}</div><div class="pb" style="height:8px"><div class="pf" style="width:${p}%;background:${c.f}"></div></div><input type="range" class="meta-slider" min="0" max="100" value="${p}" step="1" style="accent-color:${c.f}" oninput="updMeta(${m.id},this.value)"/></div>`;}).join(''):`<div class="empty">Nenhuma meta aqui ainda.</div>`;
 }
 
 function filterMetas(f,btn){S.metaFilter=f;document.querySelectorAll('#mf-row .btn-sm').forEach(b=>{b.style.borderColor='';b.style.color='';});btn.style.borderColor='var(--green)';btn.style.color='var(--green)';sv();renderMetas();}
 function updMeta(id,v){const m=S.metas.find(x=>x.id===id);if(m){m.atual=Math.round((parseInt(v)/100)*m.total*10)/10;sv();renderMetas();}}
 function delMeta(id){S.metas=S.metas.filter(m=>m.id!==id);sv();renderMetas();}
 let mid=300;
-function saveMeta(){const nome=document.getElementById('mt-nome').value.trim();if(!nome)return;S.metas.push({id:++mid,cat:document.getElementById('mt-cat').value,icon:document.getElementById('mt-icon').value||'ðŸŽ¯',nome,atual:parseFloat(document.getElementById('mt-atual').value)||0,total:parseFloat(document.getElementById('mt-total').value)||100,unidade:document.getElementById('mt-unidade').value||'%',desc:document.getElementById('mt-desc').value,cor:document.getElementById('mt-cor').value});['mt-nome','mt-icon','mt-desc'].forEach(i=>document.getElementById(i).value='');closeOv('ov-mt');sv();renderMetas();}
-function saveHabito(){const nome=document.getElementById('hb-nome').value.trim();if(!nome)return;S.habitos.push({id:'hb_'+Date.now(),icon:document.getElementById('hb-icon').value||'â­',nome,cat:document.getElementById('hb-cat').value,xp:parseInt(document.getElementById('hb-xp').value)||20,cor:document.getElementById('hb-cor').value,unit:document.getElementById('hb-unit').value});['hb-nome','hb-icon','hb-unit'].forEach(i=>document.getElementById(i).value='');closeOv('ov-hb');sv();renderHoje();}
+function saveMeta(){const nome=document.getElementById('mt-nome').value.trim();if(!nome)return;S.metas.push({id:++mid,cat:document.getElementById('mt-cat').value,icon:document.getElementById('mt-icon').value||'🎯',nome,atual:parseFloat(document.getElementById('mt-atual').value)||0,total:parseFloat(document.getElementById('mt-total').value)||100,unidade:document.getElementById('mt-unidade').value||'%',desc:document.getElementById('mt-desc').value,cor:document.getElementById('mt-cor').value});['mt-nome','mt-icon','mt-desc'].forEach(i=>document.getElementById(i).value='');closeOv('ov-mt');sv();renderMetas();}
+function saveHabito(){const nome=document.getElementById('hb-nome').value.trim();if(!nome)return;S.habitos.push({id:'hb_'+Date.now(),icon:document.getElementById('hb-icon').value||'⭐',nome,cat:document.getElementById('hb-cat').value,xp:parseInt(document.getElementById('hb-xp').value)||20,cor:document.getElementById('hb-cor').value,unit:document.getElementById('hb-unit').value});['hb-nome','hb-icon','hb-unit'].forEach(i=>document.getElementById(i).value='');closeOv('ov-hb');sv();renderHoje();}
 
 // CONQUISTAS
 function renderCQ(){
   const f=S.cqFilter||'todas';let list=CQ;if(f==='unlocked')list=list.filter(c=>S.conquistas.includes(c.id));if(f==='locked')list=list.filter(c=>!S.conquistas.includes(c.id));
   document.getElementById('cq-feitas').textContent=S.conquistas.length;document.getElementById('cq-total').textContent=CQ.length;
   const b=document.getElementById('bdg-cq');if(b)b.style.display=S.conquistas.length?'':'none';
-  document.getElementById('cq-grid').innerHTML=list.map(c=>{const u=S.conquistas.includes(c.id);return `<div class="cq-card ${u?'unlocked':'locked'}"><div class="cq-icon">${c.icon}</div><div class="cq-name">${c.nome}</div><div class="cq-desc">${c.desc}</div><div class="cq-xp">${u?'âœ… +'+c.xp+' XP':'ðŸ”’ +'+c.xp+' XP'}</div></div>`;}).join('');
+  document.getElementById('cq-grid').innerHTML=list.map(c=>{const u=S.conquistas.includes(c.id);return `<div class="cq-card ${u?'unlocked':'locked'}"><div class="cq-icon">${c.icon}</div><div class="cq-name">${c.nome}</div><div class="cq-desc">${c.desc}</div><div class="cq-xp">${u?'✅ +'+c.xp+' XP':'🔒 +'+c.xp+' XP'}</div></div>`;}).join('');
 }
 function filterCQ(f,btn){S.cqFilter=f;document.querySelectorAll('#page-conquistas .btn-sm').forEach(b=>{b.style.borderColor='';b.style.color='';});btn.style.borderColor='var(--green)';btn.style.color='var(--green)';renderCQ();}
 
@@ -1403,79 +1686,944 @@ function updEscrita(done){const today=dk();const ex=S.escritaHist.find(e=>e.date
 function nextPrompt(){S.promptIdx=((S.promptIdx||0)+1)%PROMPTS.length;sv();const el=document.getElementById('prompt-hoje');if(el)el.textContent='"'+PROMPTS[S.promptIdx]+'"';}
 function renderCaderno(){
   const last14=S.escritaHist.slice(-14),streak=calcEStr();
-  document.getElementById('escrita-dots').innerHTML=last14.map(e=>`<div style="width:10px;height:10px;border-radius:50%;background:${e.done?'var(--pink)':'var(--bg4)'};border:1px solid ${e.done?'var(--pink)':'var(--border)'}"></div>`).join('')+`<span style="font-size:12px;color:var(--pink);margin-left:8px;font-weight:500">${streak} dias ðŸ”¥</span>`;
+  document.getElementById('escrita-dots').innerHTML=last14.map(e=>`<div style="width:10px;height:10px;border-radius:50%;background:${e.done?'var(--pink)':'var(--bg4)'};border:1px solid ${e.done?'var(--pink)':'var(--border)'}"></div>`).join('')+`<span style="font-size:12px;color:var(--pink);margin-left:8px;font-weight:500">${streak} dias 🔥</span>`;
   const idx=S.promptIdx||0;
-  document.getElementById('prompts-lista').innerHTML=[idx,(idx+1)%PROMPTS.length,(idx+2)%PROMPTS.length].map((i,j)=>`<div style="padding:12px;background:${j===0?'var(--pink-bg)':'var(--bg3)'};border:1px solid ${j===0?'var(--pink)44':'var(--border)'};border-radius:var(--r);margin-bottom:8px"><div style="font-size:10px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;font-family:var(--mono)">${j===0?'âœï¸ Para hoje':'SugestÃ£o'}</div><div style="font-size:13px;color:var(--text);font-style:italic;line-height:1.5">"${PROMPTS[i]}"</div></div>`).join('');
-  document.getElementById('escrita-hist').innerHTML=`<div style="display:flex;gap:5px;flex-wrap:wrap">${last14.map((e,i)=>{const ago=last14.length-1-i;return `<div style="width:40px;text-align:center"><div style="width:36px;height:36px;border-radius:8px;background:${e.done?'var(--pink-bg)':'var(--bg3)'};border:1px solid ${e.done?'var(--pink)44':'var(--border)'};display:flex;align-items:center;justify-content:center;margin:0 auto 3px;font-size:14px">${e.done?'âœï¸':'Â·'}</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono)">${ago===0?'hoje':ago===1?'ontem':ago+'d'}</div></div>`;}).join('')}</div>`;
+  document.getElementById('prompts-lista').innerHTML=[idx,(idx+1)%PROMPTS.length,(idx+2)%PROMPTS.length].map((i,j)=>`<div style="padding:12px;background:${j===0?'var(--pink-bg)':'var(--bg3)'};border:1px solid ${j===0?'var(--pink)44':'var(--border)'};border-radius:var(--r);margin-bottom:8px"><div style="font-size:10px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;font-family:var(--mono)">${j===0?'✍️ Para hoje':'Sugestão'}</div><div style="font-size:13px;color:var(--text);font-style:italic;line-height:1.5">"${PROMPTS[i]}"</div></div>`).join('');
+  document.getElementById('escrita-hist').innerHTML=`<div style="display:flex;gap:5px;flex-wrap:wrap">${last14.map((e,i)=>{const ago=last14.length-1-i;return `<div style="width:40px;text-align:center"><div style="width:36px;height:36px;border-radius:8px;background:${e.done?'var(--pink-bg)':'var(--bg3)'};border:1px solid ${e.done?'var(--pink)44':'var(--border)'};display:flex;align-items:center;justify-content:center;margin:0 auto 3px;font-size:14px">${e.done?'✍️':'·'}</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono)">${ago===0?'hoje':ago===1?'ontem':ago+'d'}</div></div>`;}).join('')}</div>`;
+}
+
+// ================================================================
+// RANKING GLOBAL
+// ================================================================
+function getWeekKey(){
+  const d=new Date();
+  const jan1=new Date(d.getFullYear(),0,1);
+  const week=Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
+  return `${d.getFullYear()}-W${String(week).padStart(2,'0')}`;
+}
+
+function calcPontosSemanais(){
+  // Calcular pontos da semana atual
+  const today=new Date();
+  const wkDates=Array.from({length:7},(_,i)=>{
+    const d=new Date(today);d.setDate(d.getDate()-(HOJE_IDX-i));
+    return d.toISOString().slice(0,10);
+  });
+  let pts=0;
+  wkDates.forEach(dt=>{
+    const day=S.dias[dt];
+    if(!day)return;
+    const done=S.habitos.filter(h=>day.done[h.id]).length;
+    const total=S.habitos.length;
+    pts+=day.xp||0;
+    if(done>=Math.ceil(total*0.6)) pts+=50;
+    if(done===total&&total>0) pts+=100;
+  });
+  const wkC=gwk();
+  pts+=wkC.filter(Boolean).length*30;
+  return pts;
+}
+
+async function syncProfile(){
+  if(!sb||!currentUser) return;
+  const lv=getLv(S.totalXP);
+  try{
+    await sb.from('user_profiles').upsert({
+      user_id:currentUser.id,
+      username:document.getElementById('av-name')?.textContent||'Jogador',
+      avatar_emoji:lv.icon,
+      level_name:lv.nome,
+      total_xp:S.totalXP||0,
+      streak:calcStreak(),
+      dias_perfeitos:S.diasPerfeitos||0,
+      habitos_completos:Object.values(S.hc||{}).reduce((a,b)=>a+b,0),
+      updated_at:new Date().toISOString()
+    },{onConflict:'user_id'});
+  }catch(e){console.error('syncProfile error:',e);}
+}
+
+async function syncWeekly(){
+  if(!sb||!currentUser) return;
+  const wk=getWeekKey();
+  const pts=calcPontosSemanais();
+  const today=new Date();
+  const wkDates=Array.from({length:7},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-(HOJE_IDX-i));return d.toISOString().slice(0,10);});
+  const habitosW=wkDates.reduce((s,dt)=>s+(S.dias[dt]?S.habitos.filter(h=>S.dias[dt].done[h.id]).length:0),0);
+  const perfeitos=wkDates.filter(dt=>{const day=S.dias[dt];return day&&S.habitos.every(h=>day.done[h.id])&&S.habitos.length>0;}).length;
+  const lv=getLv(S.totalXP);
+  try{
+    await sb.from('weekly_competitions').upsert({
+      week_key:wk,
+      user_id:currentUser.id,
+      username:document.getElementById('av-name')?.textContent||'Jogador',
+      avatar_emoji:lv.icon,
+      xp_semana:wkDates.reduce((s,dt)=>s+(S.dias[dt]?.xp||0),0),
+      habitos_semana:habitosW,
+      streak_semana:calcStreak(),
+      dias_perfeitos_semana:perfeitos,
+      pontos_total:pts,
+      updated_at:new Date().toISOString()
+    },{onConflict:'week_key,user_id'});
+  }catch(e){console.error('syncWeekly error:',e);}
+}
+
+function renderRankItem(item,idx,tipo,myId){
+  const isMe=item.user_id===myId;
+  const pos=idx+1;
+  const posCls=pos===1?'p1':pos===2?'p2':pos===3?'p3':'';
+  const score=tipo==='xp'?`${(item.total_xp||0).toLocaleString('pt-BR')} XP`:
+               tipo==='streak'?`${item.streak||0} dias`:
+               `${(item.pontos_total||0).toLocaleString('pt-BR')} pts`;
+  const detail=tipo==='xp'?`${item.level_name||'Iniciante'} · streak ${item.streak||0}d`:
+                tipo==='streak'?`${(item.total_xp||0).toLocaleString('pt-BR')} XP total`:
+                `${item.xp_semana||0} XP · ${item.habitos_semana||0} hábitos`;
+  return `<div class="rank-global-item ${isMe?'me':''}">
+    <div class="rank-pos-big ${posCls}">${pos<=3?['🥇','🥈','🥉'][pos-1]:pos}</div>
+    <div class="rank-avatar">${item.avatar_emoji||'🌱'}</div>
+    <div class="rank-info">
+      <div class="rank-username">${item.username||'Jogador'}${isMe?' (você)':''}</div>
+      <div class="rank-detail">${detail}</div>
+    </div>
+    <div class="rank-score">${score}</div>
+  </div>`;
+}
+
+async function renderRankingGlobal(){
+  const myId=currentUser?.id;
+  document.getElementById('ranking-sub').textContent='Carregando ranking...';
+
+  // Stats cards
+  document.getElementById('ranking-stats').innerHTML=[
+    {l:'Total de jogadores',v:'...',c:'cg',i:'👥'},
+    {l:'Maior XP global',v:'...',c:'ca',i:'⚡'},
+    {l:'Maior streak',v:'...',c:'cb',i:'🔥'},
+    {l:'Sua posição',v:'...',c:'cp',i:'🏆'},
+  ].map(s=>`<div class="sc ${s.c}"><div class="sc-lbl">${s.l}</div><div class="sc-val" id="rs-${s.l.replace(/ /g,'')}">${s.v}</div><div class="sc-icon">${s.i}</div></div>`).join('');
+
+  if(!sb){
+    document.getElementById('ranking-xp-lista').innerHTML='<div class="empty">Conecte ao Supabase para ver o ranking.</div>';
+    return;
+  }
+
+  try{
+    // Sync antes de buscar
+    await syncProfile();
+
+    // Buscar top 20 por XP
+    const{data:topXP}=await sb.from('user_profiles')
+      .select('*').order('total_xp',{ascending:false}).limit(20);
+
+    // Buscar top 20 por streak
+    const{data:topStreak}=await sb.from('user_profiles')
+      .select('*').order('streak',{ascending:false}).limit(20);
+
+    const total=topXP?.length||0;
+    const maxXP=topXP?.[0]?.total_xp||0;
+    const maxStreak=topStreak?.[0]?.streak||0;
+
+    // Minha posição
+    const minhaPos=(topXP||[]).findIndex(u=>u.user_id===myId)+1;
+
+    document.getElementById('ranking-sub').textContent=`${total} jogador${total!==1?'es':''} no ranking global`;
+
+    // Atualizar stats
+    document.getElementById('rs-TotaldejogadoresXP'.replace(/ /g,''));
+    const statsMap={
+      'rs-Totaldejogadores':total,
+      'rs-MaiorXPglobal':`${maxXP.toLocaleString('pt-BR')} XP`,
+      'rs-Maiorstreak':`${maxStreak}d`,
+      'rs-Suaposição':minhaPos>0?`#${minhaPos}`:'—'
+    };
+    Object.entries(statsMap).forEach(([id,val])=>{
+      const el=document.getElementById(id);
+      if(el)el.textContent=val;
+    });
+
+    // Listas
+    document.getElementById('ranking-xp-lista').innerHTML=
+      (topXP||[]).map((item,i)=>renderRankItem(item,i,'xp',myId)).join('')||
+      '<div class="empty">Nenhum jogador ainda.</div>';
+
+    document.getElementById('ranking-streak-lista').innerHTML=
+      (topStreak||[]).map((item,i)=>renderRankItem(item,i,'streak',myId)).join('')||
+      '<div class="empty">Nenhum jogador ainda.</div>';
+
+    // Minha posição destacada
+    const me=(topXP||[]).find(u=>u.user_id===myId);
+    document.getElementById('minha-posicao').innerHTML=me?
+      `<div class="rank-global-item me">${renderRankItem(me,(topXP||[]).indexOf(me),'xp',myId).replace('<div class="rank-global-item me">','').replace('</div>','')}</div>`:
+      '<div class="empty">Complete hábitos hoje para aparecer no ranking!</div>';
+
+  }catch(e){
+    console.error('Ranking error:',e);
+    document.getElementById('ranking-xp-lista').innerHTML='<div class="empty">Erro ao carregar ranking.</div>';
+  }
+}
+
+async function renderCompeticao(){
+  const myId=currentUser?.id;
+  const wk=getWeekKey();
+
+  // Timer até domingo
+  const now=new Date();
+  const sunday=new Date(now);
+  sunday.setDate(now.getDate()+(7-now.getDay())%7||7);
+  sunday.setHours(23,59,59);
+  const diff=sunday-now;
+  const days=Math.floor(diff/86400000);
+  const hours=Math.floor((diff%86400000)/3600000);
+  const mins=Math.floor((diff%3600000)/60000);
+  const timerEl=document.getElementById('comp-timer');
+  if(timerEl) timerEl.textContent=`⏱ Termina em ${days}d ${hours}h ${mins}min — Semana ${wk}`;
+
+  // Meus pontos desta semana
+  const meusPts=calcPontosSemanais();
+
+  document.getElementById('comp-stats').innerHTML=[
+    {l:'Meus pontos',v:meusPts.toLocaleString('pt-BR'),c:'ca',i:'⚡'},
+    {l:'Semana',v:wk.split('-')[1],c:'cb',i:'📅'},
+    {l:'Dias restantes',v:days,c:'cg',i:'⏱'},
+    {l:'Hábitos feitos',v:S.habitos.filter(h=>gday().done[h.id]).length,c:'cp',i:'✅'},
+  ].map(s=>`<div class="sc ${s.c}"><div class="sc-lbl">${s.l}</div><div class="sc-val">${s.v}</div><div class="sc-icon">${s.i}</div></div>`).join('');
+
+  if(!sb){
+    document.getElementById('podio-lista').innerHTML='<div class="empty">Conecte ao Supabase para ver o pódio.</div>';
+    return;
+  }
+
+  try{
+    await syncWeekly();
+
+    const{data:top}=await sb.from('weekly_competitions')
+      .select('*').eq('week_key',wk).order('pontos_total',{ascending:false}).limit(20);
+
+    const lista=top||[];
+    const minhaPos=lista.findIndex(u=>u.user_id===myId);
+
+    // Pódio visual
+    const p1=lista[0],p2=lista[1],p3=lista[2];
+    const podioHtml=`<div class="podio-wrap">
+      ${p2?`<div class="podio-item p2">
+        <div class="podio-avatar">${p2.avatar_emoji||'🌱'}</div>
+        <div class="podio-name">${p2.username||'Jogador'}</div>
+        <div class="podio-xp">${(p2.pontos_total||0).toLocaleString()} pts</div>
+        <div class="podio-bar"><div class="podio-rank">2</div></div>
+      </div>`:''}
+      ${p1?`<div class="podio-item p1">
+        <div class="podio-crown">👑</div>
+        <div class="podio-avatar">${p1.avatar_emoji||'🌱'}</div>
+        <div class="podio-name">${p1.username||'Jogador'}</div>
+        <div class="podio-xp">${(p1.pontos_total||0).toLocaleString()} pts</div>
+        <div class="podio-bar"><div class="podio-rank">1</div></div>
+      </div>`:'<div class="empty">Seja o primeiro!</div>'}
+      ${p3?`<div class="podio-item p3">
+        <div class="podio-avatar">${p3.avatar_emoji||'🌱'}</div>
+        <div class="podio-name">${p3.username||'Jogador'}</div>
+        <div class="podio-xp">${(p3.pontos_total||0).toLocaleString()} pts</div>
+        <div class="podio-bar"><div class="podio-rank">3</div></div>
+      </div>`:''}
+    </div>`;
+
+    // Lista completa abaixo do pódio
+    const listaHtml=lista.slice(3).map((item,i)=>renderRankItem(item,i+3,'semanal',myId)).join('');
+    document.getElementById('podio-lista').innerHTML=podioHtml+listaHtml||'<div class="empty">Seja o primeiro desta semana!</div>';
+
+    // Minha posição
+    const me=lista.find(u=>u.user_id===myId);
+    document.getElementById('minha-posicao-semanal').innerHTML=me?
+      `<div class="rank-global-item me">
+        <div class="rank-pos-big ${minhaPos===0?'p1':minhaPos===1?'p2':minhaPos===2?'p3':''}">${minhaPos+1}º</div>
+        <div class="rank-avatar">${me.avatar_emoji||'🌱'}</div>
+        <div class="rank-info">
+          <div class="rank-username">Você — ${me.username||'Jogador'}</div>
+          <div class="rank-detail">${me.xp_semana||0} XP · ${me.habitos_semana||0} hábitos esta semana</div>
+        </div>
+        <div class="rank-score">${(me.pontos_total||0).toLocaleString()} pts</div>
+      </div>`:
+      `<div style="text-align:center;padding:20px">
+        <div style="font-size:32px;margin-bottom:8px">⚡</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text)">Você ainda não está no ranking desta semana</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">Complete hábitos hoje para entrar na competição!</div>
+        <div style="font-family:var(--mono);font-size:16px;color:var(--amber);margin-top:8px">${meusPts} pontos acumulados hoje</div>
+      </div>`;
+
+  }catch(e){
+    console.error('Competição error:',e);
+    document.getElementById('podio-lista').innerHTML='<div class="empty">Erro ao carregar competição.</div>';
+  }
+}
+
+
+// ================================================================
+// MÓDULO DE ESTUDOS
+// ================================================================
+
+let EST_TAB = 'dashboard';
+
+function estTab(tab, el){
+  EST_TAB = tab;
+  document.querySelectorAll('.est-tab').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderEstudosConteudo();
+}
+
+function renderEstudos(){
+  EST_TAB = 'dashboard';
+  document.querySelectorAll('.est-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
+  renderEstudosConteudo();
+}
+
+function getCorDisc(disc){
+  const cores=['#4488ff','#00cc88','#aa66ff','#ffaa00','#ff6688','#00cccc','#ff8844'];
+  const idx = (S.estudos?.disciplinas||[]).findIndex(d=>d.id===disc?.id);
+  return disc?.cor || cores[Math.max(0,idx)%cores.length];
+}
+
+function calcEstudosStats(){
+  const E = S.estudos || {};
+  const sessoes = E.sessoes || [];
+  const questoes = E.questoes || [];
+  const now = new Date();
+
+  // Semana atual
+  const wkStart = new Date(now); wkStart.setDate(now.getDate()-now.getDay()); wkStart.setHours(0,0,0,0);
+  // Mês atual
+  const moStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  // Ano atual
+  const yrStart = new Date(now.getFullYear(), 0, 1);
+
+  const inRange = (dt, from) => new Date(dt) >= from;
+
+  const hSemana = sessoes.filter(s=>inRange(s.data, wkStart)).reduce((a,s)=>a+s.minutos,0);
+  const hMes    = sessoes.filter(s=>inRange(s.data, moStart)).reduce((a,s)=>a+s.minutos,0);
+  const hAno    = sessoes.filter(s=>inRange(s.data, yrStart)).reduce((a,s)=>a+s.minutos,0);
+
+  const totalQ  = questoes.reduce((a,q)=>a+q.total,0);
+  const totalAc = questoes.reduce((a,q)=>a+q.acertos,0);
+  const taxaAc  = totalQ > 0 ? Math.round(totalAc/totalQ*100) : 0;
+
+  // Streak de estudos
+  let streak = 0;
+  const d = new Date(now);
+  while(true){
+    const key = d.toISOString().slice(0,10);
+    if(sessoes.some(s=>s.data===key)){ streak++; d.setDate(d.getDate()-1); }
+    else break;
+    if(streak>365) break;
+  }
+
+  return {hSemana,hMes,hAno,totalQ,taxaAc,streak,totalSessoes:sessoes.length};
+}
+
+function statsDisc(discId){
+  const E = S.estudos || {};
+  const sessoes = (E.sessoes||[]).filter(s=>s.discId===discId);
+  const questoes = (E.questoes||[]).filter(q=>q.discId===discId);
+  const minutos = sessoes.reduce((a,s)=>a+s.minutos,0);
+  const totalQ  = questoes.reduce((a,q)=>a+q.total,0);
+  const acertos = questoes.reduce((a,q)=>a+q.acertos,0);
+  const taxa    = totalQ > 0 ? Math.round(acertos/totalQ*100) : 0;
+  const ultima  = sessoes.length ? sessoes[sessoes.length-1].data : null;
+  return {minutos,sessoes:sessoes.length,totalQ,acertos,erros:totalQ-acertos,taxa,ultima};
+}
+
+function renderEstudosConteudo(){
+  const el = document.getElementById('est-content');
+  if(!el) return;
+  const E = S.estudos || {};
+  const discs = E.disciplinas || [];
+
+  if(EST_TAB==='dashboard'){
+    const st = calcEstudosStats();
+    const topDisc = [...discs].sort((a,b)=>statsDisc(b.id).minutos-statsDisc(a.id).minutos).slice(0,3);
+    const weakDisc = [...discs].filter(d=>statsDisc(d.id).totalQ>0).sort((a,b)=>statsDisc(a.id).taxa-statsDisc(b.id).taxa).slice(0,3);
+
+    const metas = E.metas||{horasSemanais:10,horasMensais:40,questoesMes:200};
+    const pctHSem = Math.min(100,Math.round(st.hSemana/60/metas.horasSemanais*100));
+    const pctHMes = Math.min(100,Math.round(st.hMes/60/metas.horasMensais*100));
+    const pctQMes = Math.min(100,Math.round(st.totalQ/metas.questoesMes*100));
+
+    
+    // Countdown para a prova
+    const prazoProva = E.metas?.prazoProva || '2026-08-30';
+    const concursoFoco = E.metas?.concursoFoco || 'Câmara Arujá';
+    const hoje = new Date();
+    const prova = new Date(prazoProva + 'T00:00:00');
+    const diasRestantes = Math.ceil((prova - hoje) / 86400000);
+    const urgencia = diasRestantes <= 30 ? 'var(--red)' : diasRestantes <= 60 ? 'var(--amber)' : 'var(--green)';
+    const semanas = Math.floor(diasRestantes / 7);
+
+    el.innerHTML = `
+    <!-- COUNTDOWN DA PROVA -->
+    <div class="card mb20" style="background:linear-gradient(135deg,var(--amber-bg),var(--bg2));border-color:var(--amber)30">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px">Foco atual</div>
+          <div style="font-size:18px;font-weight:700;color:var(--text);margin-top:4px">🎯 ${concursoFoco}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">Prova: ${prova.toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})}</div>
+        </div>
+        <div style="text-align:center;min-width:120px">
+          <div style="font-size:48px;font-weight:700;font-family:var(--mono);color:${urgencia};line-height:1">${diasRestantes}</div>
+          <div style="font-size:12px;color:var(--text2)">dias restantes</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${semanas} semanas</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;background:var(--bg3);border-radius:6px;height:6px">
+        <div style="width:${Math.max(2,Math.min(100,Math.round((1-diasRestantes/120)*100)))}%;height:6px;border-radius:6px;background:${urgencia};transition:width .5s"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right;font-family:var(--mono)">
+        ${diasRestantes <= 0 ? '⚠️ Prova passou!' : diasRestantes <= 7 ? '🚨 ÚLTIMA SEMANA!' : diasRestantes <= 30 ? '🔴 Reta final!' : diasRestantes <= 60 ? '🟡 Aceleração!' : '🟢 Preparação'}
+      </div>
+    </div>
+    ` + `
+    <div class="g4 mb20">
+      <div class="sc cb"><div class="sc-lbl">Horas esta semana</div><div class="sc-val">${(st.hSemana/60).toFixed(1)}h</div><div class="sc-icon">📅</div></div>
+      <div class="sc cg"><div class="sc-lbl">Horas este mês</div><div class="sc-val">${(st.hMes/60).toFixed(1)}h</div><div class="sc-icon">📆</div></div>
+      <div class="sc ca"><div class="sc-lbl">Questões resolvidas</div><div class="sc-val">${st.totalQ}</div><div class="sc-icon">✏️</div></div>
+      <div class="sc cp"><div class="sc-lbl">Taxa de acertos</div><div class="sc-val">${st.taxaAc}%</div><div class="sc-icon">🎯</div></div>
+    </div>
+    <div class="g4 mb20">
+      <div class="sc"><div class="sc-lbl">Sessões totais</div><div class="sc-val">${st.totalSessoes}</div><div class="sc-icon">⏱</div></div>
+      <div class="sc"><div class="sc-lbl">Streak de estudo</div><div class="sc-val">${st.streak}d</div><div class="sc-icon">🔥</div></div>
+      <div class="sc"><div class="sc-lbl">Horas no ano</div><div class="sc-val">${(st.hAno/60).toFixed(0)}h</div><div class="sc-icon">🏆</div></div>
+      <div class="sc"><div class="sc-lbl">Disciplinas</div><div class="sc-val">${discs.length}</div><div class="sc-icon">📖</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="stitle">Progresso das metas</div>
+        <div class="meta-est-bar">
+          <div class="meta-est-header"><span class="meta-est-name">⏱ Horas semanais</span><span class="meta-est-pct">${(st.hSemana/60).toFixed(1)}/${metas.horasSemanais}h</span></div>
+          <div class="meta-est-bg"><div class="meta-est-fill" style="width:${pctHSem}%"></div></div>
+        </div>
+        <div class="meta-est-bar">
+          <div class="meta-est-header"><span class="meta-est-name">📆 Horas mensais</span><span class="meta-est-pct">${(st.hMes/60).toFixed(1)}/${metas.horasMensais}h</span></div>
+          <div class="meta-est-bg"><div class="meta-est-fill" style="width:${pctHMes}%"></div></div>
+        </div>
+        <div class="meta-est-bar">
+          <div class="meta-est-header"><span class="meta-est-name">✏️ Questões do mês</span><span class="meta-est-pct">${st.totalQ}/${metas.questoesMes}</span></div>
+          <div class="meta-est-bg"><div class="meta-est-fill" style="width:${pctQMes}%"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="stitle">📈 Mais estudadas</div>
+        ${topDisc.length ? topDisc.map(d=>{const s=statsDisc(d.id);return`<div class="disc-card" style="margin-bottom:8px" onclick="estTab('disciplinas')"><div class="disc-card-header"><div class="disc-icon" style="background:${getCorDisc(d)}22">${d.emoji}</div><div><div class="disc-name">${d.nome}</div><div class="disc-meta">${(s.minutos/60).toFixed(1)}h · ${s.sessoes} sessões</div></div></div><div class="disc-bar-bg"><div class="disc-bar-fill" style="width:${s.taxa||0}%;background:${getCorDisc(d)}"></div></div></div>`}).join('') : '<div class="empty">Registre sessões para ver</div>'}
+        <div class="stitle" style="margin-top:14px">⚠️ Menor desempenho</div>
+        ${weakDisc.length ? weakDisc.map(d=>{const s=statsDisc(d.id);return`<div class="questao-row" style="margin-bottom:6px"><div class="disc-icon" style="background:${getCorDisc(d)}22;width:28px;height:28px;border-radius:6px;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${d.emoji}</div><div class="questao-info"><div class="questao-tema">${d.nome}</div><div class="questao-stats"><span class="q-pct">${s.taxa}% acertos</span><span class="q-erros">${s.erros} erros</span></div></div></div>`}).join('') : '<div class="empty">Registre questões para ver</div>'}
+      </div>
+    </div>`;
+  }
+
+  else if(EST_TAB==='disciplinas'){
+    el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="stitle" style="margin:0">Minhas Disciplinas</div>
+      <button class="btn-primary" onclick="addDisc()">+ Nova</button>
+    </div>
+    <div class="g2">
+      ${discs.map(d=>{
+        const s=statsDisc(d.id);
+        const cor=getCorDisc(d);
+        return`<div class="disc-card">
+          <div class="disc-card-header">
+            <div class="disc-icon" style="background:${cor}22">${d.emoji}</div>
+            <div style="flex:1"><div class="disc-name">${d.nome}</div><div class="disc-meta">${s.ultima?'Último estudo: '+s.ultima:'Ainda não estudado'}</div></div>
+            <button onclick="delDisc('${d.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">×</button>
+          </div>
+          <div class="disc-stats">
+            <div class="disc-stat"><div class="disc-stat-val">${(s.minutos/60).toFixed(1)}h</div><div class="disc-stat-lbl">estudadas</div></div>
+            <div class="disc-stat"><div class="disc-stat-val">${s.totalQ}</div><div class="disc-stat-lbl">questões</div></div>
+            <div class="disc-stat"><div class="disc-stat-val" style="color:${s.taxa>=70?'var(--green)':s.taxa>=50?'var(--amber)':'#f87171'}">${s.taxa}%</div><div class="disc-stat-lbl">acertos</div></div>
+          </div>
+          <div class="disc-bar-wrap">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px"><span>desempenho</span><span>${s.acertos}✓ ${s.erros}✗</span></div>
+            <div class="disc-bar-bg"><div class="disc-bar-fill" style="width:${s.taxa}%;background:${s.taxa>=70?'var(--green)':s.taxa>=50?'var(--amber)':'#f87171'}"></div></div>
+          </div>
+        </div>`;
+      }).join('') || '<div class="empty">Nenhuma disciplina. Crie a primeira!</div>'}
+    </div>`;
+  }
+
+  else if(EST_TAB==='sessao'){
+    const ultimas = [...(E.sessoes||[])].reverse().slice(0,10);
+    el.innerHTML = `
+    <div class="g2">
+      <div class="card">
+        <div class="stitle">Registrar Sessão</div>
+        <div class="sessao-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Disciplina</label>
+              <select id="ses-disc">
+                ${discs.map(d=>`<option value="${d.id}">${d.emoji} ${d.nome}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Data</label>
+              <input type="date" id="ses-data" value="${new Date().toISOString().slice(0,10)}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tema estudado</label>
+            <input type="text" id="ses-tema" placeholder="Ex: Concordância Verbal, Juros Compostos...">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Início</label>
+              <input type="time" id="ses-inicio">
+            </div>
+            <div class="form-group">
+              <label>Término</label>
+              <input type="time" id="ses-fim">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Duração (minutos)</label>
+              <input type="number" id="ses-min" placeholder="60" min="1" max="480">
+            </div>
+            <div class="form-group">
+              <label>Dificuldade</label>
+              <select id="ses-dif">
+                <option value="facil">😊 Fácil</option>
+                <option value="media" selected>😐 Média</option>
+                <option value="dificil">😤 Difícil</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group single">
+            <label>Observações</label>
+            <textarea id="ses-obs" placeholder="O que aprendeu? O que precisa revisar?"></textarea>
+          </div>
+          <button class="btn-primary" onclick="salvarSessao()">✅ Salvar Sessão</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="stitle">Últimas Sessões</div>
+        ${ultimas.map(s=>{
+          const d=discs.find(x=>x.id===s.discId)||{nome:s.discId,emoji:'📖',cor:'#888'};
+          const cor=getCorDisc(d);
+          return`<div class="sessao-item">
+            <div class="sessao-data">${s.data.slice(5)}</div>
+            <div class="sessao-body">
+              <span class="sessao-disc" style="background:${cor}22;color:${cor}">${d.emoji} ${d.nome}</span>
+              <div class="sessao-tema">${s.tema}</div>
+              <div class="sessao-meta">
+                <span>${s.dif==='facil'?'😊':s.dif==='dificil'?'😤':'😐'} ${s.dif}</span>
+                ${s.obs?`<span>📝 ${s.obs.slice(0,40)}${s.obs.length>40?'...':''}</span>`:''}
+              </div>
+            </div>
+            <div class="sessao-dur">${s.minutos}min</div>
+          </div>`;
+        }).join('') || '<div class="empty">Nenhuma sessão registrada</div>'}
+      </div>
+    </div>`;
+  }
+
+  else if(EST_TAB==='questoes'){
+    const questoes = [...(E.questoes||[])].reverse().slice(0,20);
+    el.innerHTML = `
+    <div class="g2">
+      <div class="card">
+        <div class="stitle">Registrar Questões</div>
+        <div class="sessao-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Disciplina</label>
+              <select id="q-disc">
+                ${discs.map(d=>`<option value="${d.id}">${d.emoji} ${d.nome}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Data</label>
+              <input type="date" id="q-data" value="${new Date().toISOString().slice(0,10)}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tema</label>
+            <input type="text" id="q-tema" placeholder="Ex: Crase, Probabilidade...">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Total de questões</label>
+              <input type="number" id="q-total" placeholder="10" min="1">
+            </div>
+            <div class="form-group">
+              <label>Acertos</label>
+              <input type="number" id="q-acertos" placeholder="7" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tempo gasto (minutos)</label>
+            <input type="number" id="q-tempo" placeholder="30" min="1">
+          </div>
+          <button class="btn-primary" onclick="salvarQuestoes()">✅ Salvar Questões</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="stitle">Histórico de Questões</div>
+        ${questoes.map(q=>{
+          const d=discs.find(x=>x.id===q.discId)||{nome:q.discId,emoji:'📖',cor:'#888'};
+          const cor=getCorDisc(d);
+          const pct=q.total>0?Math.round(q.acertos/q.total*100):0;
+          return`<div class="questao-row" style="margin-bottom:6px">
+            <span class="questao-disc" style="background:${cor}22;color:${cor}">${d.emoji}</span>
+            <div class="questao-info">
+              <div class="questao-tema">${q.tema}</div>
+              <div class="questao-stats">
+                <span class="q-acertos">✓ ${q.acertos}</span>
+                <span class="q-erros">✗ ${q.total-q.acertos}</span>
+                <span class="q-pct">${pct}%</span>
+                <span style="color:var(--text3)">${q.data.slice(5)}</span>
+              </div>
+            </div>
+          </div>`;
+        }).join('') || '<div class="empty">Nenhuma questão registrada</div>'}
+      </div>
+    </div>`;
+  }
+
+  else if(EST_TAB==='erros'){
+    const erros = [...(E.erros||[])].reverse();
+    el.innerHTML = `
+    <div class="g2">
+      <div class="card">
+        <div class="stitle">Registrar Erro</div>
+        <div class="sessao-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Disciplina</label>
+              <select id="e-disc">
+                ${discs.map(d=>`<option value="${d.id}">${d.emoji} ${d.nome}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Data</label>
+              <input type="date" id="e-data" value="${new Date().toISOString().slice(0,10)}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tema</label>
+            <input type="text" id="e-tema" placeholder="Ex: Crase, Juros, Verbos...">
+          </div>
+          <div class="form-group">
+            <label>Motivo do erro</label>
+            <input type="text" id="e-motivo" placeholder="Ex: Confundi a regra X com Y">
+          </div>
+          <div class="form-group">
+            <label>Observação</label>
+            <textarea id="e-obs" placeholder="Como evitar este erro no futuro?"></textarea>
+          </div>
+          <button class="btn-primary" onclick="salvarErro()">✅ Registrar Erro</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="stitle">Banco de Erros (${erros.length})</div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+          <button class="btn-sm" onclick="filtroErros('')">Todos</button>
+          <button class="btn-sm" onclick="filtroErros('pendente')">Pendentes</button>
+          <button class="btn-sm" onclick="filtroErros('revisado')">Revisados</button>
+        </div>
+        <div id="erros-lista">
+          ${renderErrosList(erros, discs)}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  else if(EST_TAB==='revisoes'){
+    const errosPend = (E.erros||[]).filter(e=>e.status!=='revisado');
+    const questaoFraca = [...discs].filter(d=>statsDisc(d.id).totalQ>0&&statsDisc(d.id).taxa<60);
+    const hoje = new Date().toISOString().slice(0,10);
+
+    const revisoesSugeridas = [
+      ...errosPend.map(e=>{
+        const diasPassados = Math.floor((new Date()-new Date(e.data))/86400000);
+        const urgencia = diasPassados>=30?'rev-hoje':diasPassados>=7?'rev-semana':'rev-normal';
+        const d = discs.find(x=>x.id===e.discId)||{nome:e.discId,emoji:'📖'};
+        return{id:e.id,tipo:'erro',urgencia,diasPassados,tema:e.tema,disc:d,motivo:e.motivo};
+      }),
+      ...questaoFraca.map(d=>{
+        const s=statsDisc(d.id);
+        return{id:d.id,tipo:'desempenho',urgencia:'rev-semana',diasPassados:0,tema:`Desempenho baixo em ${d.nome}`,disc:d,motivo:`Taxa de acertos: ${s.taxa}%`};
+      })
+    ].sort((a,b)=>b.diasPassados-a.diasPassados).slice(0,15);
+
+    el.innerHTML = `
+    <div class="g2">
+      <div class="card">
+        <div class="stitle">🔁 Revisões Sugeridas (${revisoesSugeridas.length})</div>
+        <div style="display:flex;gap:8px;font-size:11px;margin-bottom:12px;flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#f87171;display:inline-block"></span>Urgente (30+ dias)</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block"></span>Esta semana</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Em dia</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${revisoesSugeridas.map(r=>`
+          <div class="revisao-item">
+            <div class="revisao-urgencia ${r.urgencia}"></div>
+            <div class="revisao-info">
+              <div class="revisao-tema">${r.disc.emoji} ${r.tema}</div>
+              <div class="revisao-meta">${r.motivo}</div>
+            </div>
+            <div class="revisao-dias" style="color:${r.urgencia==='rev-hoje'?'#f87171':r.urgencia==='rev-semana'?'var(--amber)':'var(--green)'}">
+              ${r.diasPassados>0?r.diasPassados+'d atrás':'Hoje'}
+            </div>
+          </div>`).join('') || '<div class="empty">🎉 Sem revisões pendentes!</div>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="stitle">📅 Ciclos de Revisão</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${[{dias:1,label:'1 dia',desc:'Revisão rápida do que estudou ontem'},{dias:7,label:'7 dias',desc:'Revisão da semana passada'},{dias:15,label:'15 dias',desc:'Revisão quinzenal'},{dias:30,label:'30 dias',desc:'Revisão mensal — consolidação'}].map(c=>{
+            const count = (E.erros||[]).filter(e=>{
+              const dias=Math.floor((new Date()-new Date(e.data))/86400000);
+              return dias>=c.dias&&dias<c.dias*2&&e.status!=='revisado';
+            }).length;
+            return`<div class="card-sm" style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:500;color:var(--text)">${c.label}</div>
+                <div style="font-size:11px;color:var(--text2)">${c.desc}</div>
+              </div>
+              <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:${count>0?'var(--amber)':'var(--green)'}">${count}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  else if(EST_TAB==='ia-estudos'){
+    el.innerHTML = `
+    <div class="card mb20">
+      <div class="stitle">🤖 IA Coach de Estudos</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Análise inteligente do seu desempenho com sugestões personalizadas.</p>
+      <div class="g2" style="margin-bottom:14px">
+        <button class="btn-primary" onclick="iaEstudos('analise')">📊 Analisar meu desempenho</button>
+        <button class="btn-primary" onclick="iaEstudos('hoje')">📅 O que estudar hoje?</button>
+        <button class="btn-primary" onclick="iaEstudos('fraquezas')">⚠️ Onde estou errando?</button>
+        <button class="btn-primary" onclick="iaEstudos('plano')">🗓 Criar plano semanal</button>
+      </div>
+      <div id="ia-estudos-box" class="ia-box" style="display:none"></div>
+    </div>`;
+  }
+}
+
+function renderErrosList(erros, discs){
+  if(!erros.length) return '<div class="empty">Nenhum erro registrado. Ótimo!</div>';
+  return erros.map(e=>{
+    const d=discs.find(x=>x.id===e.discId)||{nome:e.discId,emoji:'📖',cor:'#888'};
+    const cor=getCorDisc(d);
+    return`<div class="erro-card ${e.status==='revisado'?'revisado':''}" style="margin-bottom:8px">
+      <span class="erro-badge" style="background:${cor}22;color:${cor}">${d.emoji} ${d.nome}</span>
+      <div class="erro-tema">${e.tema}</div>
+      <div class="erro-motivo">${e.motivo}</div>
+      ${e.obs?`<div style="font-size:11px;color:var(--text3);margin-top:4px;font-style:italic">${e.obs}</div>`:''}
+      <div class="erro-footer">
+        <span style="font-size:11px;color:var(--text3)">${e.data}</span>
+        ${e.status!=='revisado'
+          ?`<button class="btn-revisar" onclick="marcarRevisado('${e.id}')">✓ Marcar revisado</button>`
+          :`<span style="font-size:11px;color:var(--green)">✓ Revisado</span>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filtroErros(filtro){
+  const E=S.estudos||{};
+  const discs=E.disciplinas||[];
+  const erros=[...(E.erros||[])].reverse();
+  const filtrados=filtro?erros.filter(e=>filtro==='revisado'?e.status==='revisado':e.status!=='revisado'):erros;
+  const el=document.getElementById('erros-lista');
+  if(el) el.innerHTML=renderErrosList(filtrados,discs);
+}
+
+function salvarSessao(){
+  const discId=document.getElementById('ses-disc')?.value;
+  const data=document.getElementById('ses-data')?.value;
+  const tema=document.getElementById('ses-tema')?.value?.trim();
+  const inicio=document.getElementById('ses-inicio')?.value;
+  const fim=document.getElementById('ses-fim')?.value;
+  const minInput=parseInt(document.getElementById('ses-min')?.value)||0;
+  const dif=document.getElementById('ses-dif')?.value;
+  const obs=document.getElementById('ses-obs')?.value?.trim();
+
+  if(!tema){toast('Informe o tema','terr','❌');return;}
+
+  // Calcular duração por horários se disponível
+  let minutos=minInput;
+  if(inicio&&fim){
+    const [ih,im]=inicio.split(':').map(Number);
+    const [fh,fm]=fim.split(':').map(Number);
+    const calc=(fh*60+fm)-(ih*60+im);
+    if(calc>0) minutos=calc;
+  }
+  if(!minutos){toast('Informe a duração','terr','❌');return;}
+
+  if(!S.estudos) S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
+  S.estudos.did=(S.estudos.did||10)+1;
+  S.estudos.sessoes.push({id:'s'+S.estudos.did,discId,data,tema,inicio,fim,minutos,dif,obs});
+  sv();
+  toast('Sessão salva!','txp','⏱',minutos+' min');
+  renderEstudosConteudo();
+}
+
+function salvarQuestoes(){
+  const discId=document.getElementById('q-disc')?.value;
+  const data=document.getElementById('q-data')?.value;
+  const tema=document.getElementById('q-tema')?.value?.trim();
+  const total=parseInt(document.getElementById('q-total')?.value)||0;
+  const acertos=parseInt(document.getElementById('q-acertos')?.value)||0;
+  const tempo=parseInt(document.getElementById('q-tempo')?.value)||0;
+
+  if(!tema||!total){toast('Preencha tema e quantidade','terr','❌');return;}
+  if(acertos>total){toast('Acertos não pode ser maior que total','terr','❌');return;}
+
+  if(!S.estudos) S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
+  S.estudos.qid=(S.estudos.qid||10)+1;
+  S.estudos.questoes.push({id:'q'+S.estudos.qid,discId,data,tema,total,acertos,erros:total-acertos,tempo});
+
+  // Registrar erros automaticamente no banco se taxa < 70%
+  const pct=Math.round(acertos/total*100);
+  if(pct<70){
+    S.estudos.eid=(S.estudos.eid||10)+1;
+    S.estudos.erros.push({id:'e'+S.estudos.eid,discId,data,tema,motivo:`Taxa de acertos baixa: ${pct}% (${acertos}/${total})`,obs:'',status:'pendente'});
+  }
+
+  sv();
+  toast(`${pct}% acertos em ${tema}!`,pct>=70?'txp':'terr',pct>=70?'✅':'⚠️');
+  renderEstudosConteudo();
+}
+
+function salvarErro(){
+  const discId=document.getElementById('e-disc')?.value;
+  const data=document.getElementById('e-data')?.value;
+  const tema=document.getElementById('e-tema')?.value?.trim();
+  const motivo=document.getElementById('e-motivo')?.value?.trim();
+  const obs=document.getElementById('e-obs')?.value?.trim();
+
+  if(!tema||!motivo){toast('Preencha tema e motivo','terr','❌');return;}
+
+  if(!S.estudos) S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
+  S.estudos.eid=(S.estudos.eid||10)+1;
+  S.estudos.erros.push({id:'e'+S.estudos.eid,discId,data,tema,motivo,obs,status:'pendente'});
+  sv();
+  toast('Erro registrado','terr','📝');
+  renderEstudosConteudo();
+}
+
+function marcarRevisado(id){
+  const e=(S.estudos?.erros||[]).find(x=>x.id===id);
+  if(e){e.status='revisado';sv();toast('Revisado!','txp','✓');renderEstudosConteudo();}
+}
+
+function addDisc(){
+  const nomes=['Nova Disciplina','Física','Química','História','Geografia','Biologia','Filosofia','Sociologia'];
+  const emojis=['📖','⚡','🧪','🏛','🌍','🧬','💭','👥'];
+  const cores=['#4488ff','#ff6688','#00cc88','#aa66ff','#ffaa00','#00cccc','#ff8844','#88aaff'];
+  const idx=Math.floor(Math.random()*nomes.length);
+  if(!S.estudos) S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
+  S.estudos.did=(S.estudos.did||10)+1;
+  const nome=prompt('Nome da disciplina:',nomes[idx]);
+  if(!nome)return;
+  const emoji=prompt('Emoji:',emojis[idx])||emojis[idx];
+  S.estudos.disciplinas.push({id:'d'+S.estudos.did,nome,emoji,cor:cores[idx%cores.length]});
+  sv();renderEstudosConteudo();
+}
+
+function delDisc(id){
+  if(!confirm('Remover disciplina?'))return;
+  if(!S.estudos)return;
+  S.estudos.disciplinas=(S.estudos.disciplinas||[]).filter(d=>d.id!==id);
+  sv();renderEstudosConteudo();
+}
+
+async function iaEstudos(tipo){
+  const box=document.getElementById('ia-estudos-box');
+  if(!box)return;
+  box.style.display='block';
+  box.innerHTML=`<div class="ia-loading"><div class="ia-dot"></div><div class="ia-dot"></div><div class="ia-dot"></div><span>Analisando seus dados...</span></div>`;
+
+  const E=S.estudos||{};
+  const discs=E.disciplinas||[];
+  const stats=calcEstudosStats();
+  const resumo=discs.map(d=>{const s=statsDisc(d.id);return`${d.nome}: ${(s.minutos/60).toFixed(1)}h, ${s.totalQ} questões, ${s.taxa}% acertos`;}).join('\n');
+  const errosPend=(E.erros||[]).filter(e=>e.status!=='revisado').map(e=>`${e.tema} (${(discs.find(d=>d.id===e.discId)||{nome:e.discId}).nome}): ${e.motivo}`).join('\n');
+  // Contexto dos concursos
+  const prazoProva = E.metas?.prazoProva || '2026-08-30';
+  const diasParaProva = Math.ceil((new Date(prazoProva+'T00:00:00') - new Date()) / 86400000);
+  const contexto = `CONTEXTO DO CANDIDATO:
+- Concurso prioritário: Câmara Municipal de Arujá-SP (prova em ${diasParaProva} dias — 30/08/2026)
+- Cargos-alvo: Técnico em Informática e/ou Auxiliar Administrativo
+- Concurso secundário: Petrobras 2026 — Ênfase Administração/TI (Cesgranrio)
+- Banca Arujá: IGECS
+- Banca Petrobras: Cesgranrio
+- Disciplinas comuns aos dois: Português, Matemática, Informática Básica
+- URGÊNCIA: A prova de Arujá é em ${diasParaProva} dias!`;
+
+  const prompts={
+    analise:`${contexto}
+
+Analise o desempenho de estudos a seguir e forneça um diagnóstico completo em português, considerando o prazo da prova de Arujá em ${diasParaProva} dias:
+
+Estatísticas gerais:
+- Horas esta semana: ${(stats.hSemana/60).toFixed(1)}h
+- Horas este mês: ${(stats.hMes/60).toFixed(1)}h
+- Sessões totais: ${stats.totalSessoes}
+- Questões resolvidas: ${stats.totalQ}
+- Taxa geral de acertos: ${stats.taxaAc}%
+- Streak de estudos: ${stats.streak} dias
+
+Desempenho por disciplina:
+${resumo}
+
+Erros pendentes de revisão:
+${errosPend||'Nenhum'}
+
+Dê um diagnóstico objetivo, identifique os pontos fortes e os principais problemas, e sugira 3 ações concretas para melhorar. Seja direto e motivador.`,
+    hoje:`${contexto}
+
+Com base neste perfil de estudos e considerando que faltam ${diasParaProva} dias para a prova da Câmara de Arujá, me diga exatamente o que devo estudar hoje, quanto tempo dedicar a cada disciplina, e qual a prioridade:
+
+Desempenho por disciplina:
+${resumo}
+
+Erros pendentes:
+${errosPend||'Nenhum'}
+
+Streak atual: ${stats.streak} dias
+
+Sugira: 1 disciplina principal, 1 tema específico, duração recomendada e uma meta de questões para hoje. Seja objetivo e direto.`,
+    fraquezas:`Analise onde estou errando mais e por quê:
+
+Desempenho por disciplina:
+${resumo}
+
+Banco de erros pendentes:
+${errosPend||'Nenhum'}
+
+Identifique os 3 maiores pontos fracos, explique a possível causa e sugira uma estratégia específica para cada um. Use dados concretos.`,
+    plano:`Crie um plano de estudos para esta semana baseado neste perfil:
+
+Desempenho atual:
+${resumo}
+
+Meta: ${(E.metas?.horasSemanais||10)} horas semanais, ${(E.metas?.questoesMes||200)} questões/mês
+
+Crie um cronograma de segunda a sexta com disciplinas, temas e duração. Priorize as mais fracas sem abandonar as fortes. Formato de tabela simples.`
+  };
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompts[tipo]}]})});
+    const data=await res.json();
+    const texto=data.content?.[0]?.text||'Não foi possível gerar análise.';
+    box.innerHTML=`<div class="ia-response">${texto}</div>`;
+  }catch(e){
+    box.innerHTML=`<div class="ia-response">Erro ao conectar com IA. Tente novamente.</div>`;
+  }
 }
 
 // NAV
-var EST_TAB='dashboard';
-function estTab(t,el){EST_TAB=t;document.querySelectorAll('.est-tab').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');renderEstConteudo();}
-function renderEstudos(){
-  var E=S.estudos||{};
-  var prova=new Date('2026-08-30');
-  var dias=Math.ceil((prova-new Date())/86400000);
-  var cor=dias<=30?'var(--red)':dias<=60?'var(--amber)':'var(--green)';
-  var el=document.getElementById('est-countdown');
-  if(el)el.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;color:var(--text3)">FOCO ATUAL</div><div style="font-size:18px;font-weight:700;margin-top:4px">ðŸŽ¯ CÃ¢mara ArujÃ¡ + Petrobras</div><div style="font-size:12px;color:var(--text2);margin-top:4px">Prova: 30 de agosto de 2026</div></div><div style="text-align:center"><div style="font-size:52px;font-weight:700;font-family:var(--mono);color:'+cor+'">'+dias+'</div><div style="font-size:12px;color:var(--text2)">dias restantes</div></div></div>';
-  EST_TAB='dashboard';
-  document.querySelectorAll('.est-tab').forEach((b,i)=>{b.classList.toggle('active',i===0);});
-  renderEstConteudo();
-}
-function renderEstConteudo(){
-  var el=document.getElementById('est-content');
-  if(!el)return;
-  var E=S.estudos||{};
-  var discs=E.disciplinas||[];
-  if(EST_TAB==='dashboard'){
-    el.innerHTML='<div class="g2">'+discs.map(d=>'<div class="card-sm" style="border-left:3px solid '+d.cor+'"><div style="font-size:20px">'+d.emoji+'</div><div style="font-size:13px;font-weight:500;margin-top:4px">'+d.nome+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase">'+d.cor+'</div></div>').join('')+'</div>';
-  }else if(EST_TAB==='sessao'){
-    el.innerHTML='<div class="card"><div class="stitle">Nova SessÃ£o de Estudos</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px"><select id="s-disc" class="input-field"><option value="">Disciplina</option>'+discs.map(d=>'<option value="'+d.id+'">'+d.emoji+' '+d.nome+'</option>').join('')+'</select><input id="s-tema" class="input-field" placeholder="Tema estudado"><input id="s-min" class="input-field" type="number" placeholder="Minutos estudados"><select id="s-dif" class="input-field"><option>FÃ¡cil</option><option>MÃ©dia</option><option>DifÃ­cil</option></select><button class="btn-primary" onclick="addSessao()">Salvar SessÃ£o +XP</button></div></div>';
-  }else if(EST_TAB==='questoes'){
-    el.innerHTML='<div class="card"><div class="stitle">Registrar QuestÃµes</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px"><select id="q-disc" class="input-field"><option value="">Disciplina</option>'+discs.map(d=>'<option value="'+d.id+'">'+d.emoji+' '+d.nome+'</option>').join('')+'</select><input id="q-tema" class="input-field" placeholder="Tema"><input id="q-total" class="input-field" type="number" placeholder="Total de questÃµes"><input id="q-acertos" class="input-field" type="number" placeholder="Acertos"><button class="btn-primary" onclick="addQuestao()">Salvar</button></div></div>';
-  }else if(EST_TAB==='erros'){
-    var erros=(E.erros||[]);
-    el.innerHTML='<div class="card"><div class="stitle">Banco de Erros ('+erros.length+')</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px"><select id="e-disc" class="input-field"><option value="">Disciplina</option>'+discs.map(d=>'<option value="'+d.id+'">'+d.emoji+' '+d.nome+'</option>').join('')+'</select><input id="e-tema" class="input-field" placeholder="Tema do erro"><input id="e-motivo" class="input-field" placeholder="Por que errei?"><button class="btn-primary" onclick="addErro()">Registrar Erro</button></div>'+(erros.length?'<div style="margin-top:16px">'+erros.map(e=>'<div class="card-sm" style="margin-bottom:8px"><div style="font-size:12px;font-weight:500">'+e.tema+'</div><div style="font-size:11px;color:var(--text2)">'+e.motivo+'</div></div>').join('')+'</div>':'<div class="empty">Nenhum erro registrado!</div>')+'</div>';
-  }else if(EST_TAB==='disciplinas'){
-    el.innerHTML='<div class="g2">'+discs.map(d=>{var qs=(E.questoes||[]).filter(q=>q.discId===d.id);var ac=qs.reduce((s,q)=>s+q.acertos,0);var tot=qs.reduce((s,q)=>s+q.total,0);var taxa=tot?Math.round(ac/tot*100):0;return'<div class="card-sm" style="border-left:3px solid '+d.cor+'"><div style="font-size:22px">'+d.emoji+'</div><div style="font-size:13px;font-weight:600;margin-top:4px">'+d.nome+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+(qs.length?taxa+'% acertos Â· '+tot+' questÃµes':'Nenhuma questÃ£o ainda')+'</div></div>';}).join('')+'</div>';
-  }
-}
-function addSessao(){
-  var disc=document.getElementById('s-disc').value;
-  var tema=document.getElementById('s-tema').value;
-  var min=parseInt(document.getElementById('s-min').value)||0;
-  var dif=document.getElementById('s-dif').value;
-  if(!disc||!tema||!min){toast('Preencha todos os campos','terror','âš ï¸');return;}
-  if(!S.estudos)S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
-  var xp=Math.round(min/10)*5;
-  S.estudos.sessoes.push({id:'s'+(++S.estudos.did),discId:disc,tema,min,dif,data:dk(0),ts:Date.now()});
-  S.totalXP+=xp;
-  toast('SessÃ£o salva!','txp','ðŸ“š',xp);
-  sv();renderEstConteudo();
-}
-function addQuestao(){
-  var disc=document.getElementById('q-disc').value;
-  var tema=document.getElementById('q-tema').value;
-  var total=parseInt(document.getElementById('q-total').value)||0;
-  var acertos=parseInt(document.getElementById('q-acertos').value)||0;
-  if(!disc||!tema||!total){toast('Preencha todos os campos','terror','âš ï¸');return;}
-  if(!S.estudos)S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
-  S.estudos.questoes.push({id:'q'+(++S.estudos.qid),discId:disc,tema,total,acertos,erros:total-acertos,data:dk(0),ts:Date.now()});
-  toast('QuestÃµes salvas!','txp','âœï¸',Math.round(acertos*2));
-  sv();renderEstConteudo();
-}
-function addErro(){
-  var disc=document.getElementById('e-disc').value;
-  var tema=document.getElementById('e-tema').value;
-  var motivo=document.getElementById('e-motivo').value;
-  if(!disc||!tema||!motivo){toast('Preencha todos os campos','terror','âš ï¸');return;}
-  if(!S.estudos)S.estudos={disciplinas:[],sessoes:[],questoes:[],erros:[],metas:{},did:10,qid:10,eid:10};
-  S.estudos.erros.push({id:'e'+(++S.estudos.eid),discId:disc,tema,motivo,status:'pendente',data:dk(0),ts:Date.now()});
-  toast('Erro registrado para revisÃ£o','','âŒ');
-  sv();renderEstConteudo();
-}
-const RENDERS={hoje:renderHoje,mapa:renderMapa,arena:renderArena,stats:renderStats,rpg:renderRPG,metas:renderMetas,conquistas:renderCQ,caderno:renderCaderno,estudos:renderEstudos};
+const RENDERS={hoje:renderHoje,mapa:renderMapa,arena:renderArena,stats:renderStats,rpg:renderRPG,metas:renderMetas,conquistas:renderCQ,caderno:renderCaderno,'arena-global':renderRankingGlobal,competicao:renderCompeticao,estudos:renderEstudos};
 function goPage(name,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');btn.classList.add('active');if(RENDERS[name])RENDERS[name]();}
 function openOv(id){document.getElementById(id).classList.add('open');}
 function closeOv(id){document.getElementById(id).classList.remove('open');}
@@ -1483,5 +2631,3 @@ function closeOv(id){document.getElementById(id).classList.remove('open');}
 </script>
 </body>
 </html>
-
-<!-- forcebuild20260619095948 -->
